@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-// Animation Variants
+
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -19,7 +19,7 @@ const staggerContainer = {
   }
 };
 
-// Custom SVG Icons Components (Lucide हटाइयो, तर आइकन्स चाहिने भएकोले SVG प्रयोग गरिएको छ)
+
 const IconArrowRight = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
 );
@@ -49,16 +49,15 @@ function Home() {
   return (
     <div className="bg-slate-50 overflow-x-hidden font-sans">
       
-      {/* --- HERO SECTION --- */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Fixed Scaling */}
+   
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=2070&auto=format&fit=crop" 
             alt="Nepal Bike Ride" 
-            className="w-full h-full object-cover" // Removed scale-105 to prevent blurriness, added nice object-fit
+            className="w-full h-full object-cover" 
           />
-          {/* Enhanced Gradient Overlay */}
+       \
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-slate-50" />
         </div>
 
@@ -107,7 +106,7 @@ function Home() {
           </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
+      
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1, y: [0, 10, 0] }} 
@@ -118,7 +117,7 @@ function Home() {
         </motion.div>
       </section>
 
-      {/* --- STATS SECTION --- */}
+   \
       <div className="relative px-4">
         <div className="bg-white border-b border-slate-200 relative z-20 -mt-20 mx-auto max-w-6xl rounded-3xl shadow-2xl p-10 grid grid-cols-2 md:grid-cols-4 gap-8 md:divide-x divide-slate-100">
           {[
@@ -135,7 +134,7 @@ function Home() {
         </div>
       </div>
 
-      {/* --- FEATURES SECTION --- */}
+     
       <section className="py-24 px-6 bg-slate-50">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -176,9 +175,9 @@ function Home() {
         </div>
       </section>
 
-      {/* --- FLEET SECTION (IMAGES FIXED HERE) --- */}
+  
       <section className="py-24 bg-slate-900 text-white overflow-hidden relative">
-         {/* Decorative background element */}
+        
          <div className="absolute top-0 right-0 w-1/2 h-full bg-slate-800/20 skew-x-12 pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -200,24 +199,24 @@ function Home() {
                 price: "Rs 800", 
                 unit:"/day", 
                 tag: "Cruiser", 
-                // Unsplash Image used for demo. Replace with your 'src/assets/...' 
-                img: "https://images.unsplash.com/photo-1623079400394-f07955b7b62d?q=80&w=2070&auto=format&fit=crop"
+                // image 1
+                img: "./assets/bikes/royal-enfield.webp"
               },
               { 
                 name: "Honda XR 190", 
                 price: "Rs 1200", 
                 unit:"/day", 
                 tag: "Off-Road", 
-                // Unsplash Image used for demo. Replace with your 'src/assets/...'
-                img: "https://images.unsplash.com/photo-1591638237731-01f2f010375e?q=80&w=2070&auto=format&fit=crop" 
+                // image 2
+                img: "./assets/bikes/hondaxr190.webp"
               },
               { 
                 name: "Bajaj Pulsar 220", 
                 price: "Rs 700", 
                 unit:"/day", 
                 tag: "Street", 
-                // Unsplash Image used for demo. Replace with your 'src/assets/...'
-                img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=2070&auto=format&fit=crop" 
+                // image 3
+                img: "./assets/bikes/bajaj-pulsar-220.webp"
               }
             ].map((bike, i) => (
               <motion.div
@@ -226,17 +225,17 @@ function Home() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                // Fixed height container ensures uniformity
+             
                 className="group relative h-[500px] rounded-3xl overflow-hidden cursor-pointer bg-slate-800 shadow-2xl"
               >
-                {/* IMAGE FIX: object-cover & h-full w-full ensures it fills the card perfectly */}
+           
                 <img 
                   src={bike.img} 
                   alt={bike.name} 
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                 />
                 
-                {/* Gradient overlay for text readability */}
+                
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
                 
                 <div className="absolute top-4 left-4 z-20">
@@ -254,7 +253,7 @@ function Home() {
                     </div>
                   </div>
                   
-                  {/* Button animates in */}
+                
                   <div className="h-0 group-hover:h-14 overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100">
                      <Link to="/bikes" className="mt-2 w-full py-3 bg-cyan-500 text-slate-900 font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-cyan-400 transition-colors">
                         Book Now <span className="w-4 h-4"><IconArrowRight /></span>
@@ -267,9 +266,9 @@ function Home() {
         </div>
       </section>
 
-      {/* --- TESTIMONIAL SECTION --- */}
+    
       <section className="py-24 bg-cyan-50 relative overflow-hidden">
-        {/* Background elements */}
+      
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-200 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-200 rounded-full blur-3xl opacity-50"></div>
 
@@ -294,7 +293,7 @@ function Home() {
         </div>
       </section>
 
-      {/* --- CTA SECTION --- */}
+      
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0 bg-blue-600">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-blue-900" />
