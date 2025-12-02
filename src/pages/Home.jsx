@@ -260,7 +260,7 @@ function Home() {
               <p className="font-bold text-gray-900 text-sm md:text-base">Narendra 
                 Chapagain
               </p>
-              <p className="text-xs md:text-sm text-gray-500">Adventure Rider, UK</p>
+              <p className="text-xs md:text-sm text-gray-500">Adventure Rider, Khadbari</p>
             </div>
           </div>
         </div>

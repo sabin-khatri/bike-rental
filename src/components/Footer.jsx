@@ -84,7 +84,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-white font-medium">Location</p>
-                  <p className="text-sm text-slate-400">Thamel, Kathmandu, Nepal</p>
+                  <p className="text-sm text-slate-400">Biratnagar, Nepal</p>
                 </div>
               </div>
             </div>
