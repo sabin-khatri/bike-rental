@@ -43,7 +43,7 @@ const scaleIn = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.7 } },
 };
 
-// Icons haru
+// Icons
 const IconArrowRight = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
@@ -101,7 +101,7 @@ function Home() {
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
-     
+      {/* HERO SECTION */}
       <motion.section
         initial="hidden"
         animate="visible"
@@ -158,7 +158,7 @@ function Home() {
         </div>
       </motion.section>
 
-    
+      {/* STATS SECTION */}
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -178,7 +178,7 @@ function Home() {
         </div>
       </motion.div>
 
-   
+      {/* WHY RIDE WITH US */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -213,7 +213,7 @@ function Home() {
         </div>
       </motion.section>
 
-   
+      {/* TOP BIKES */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -270,6 +270,7 @@ function Home() {
         </div>
       </motion.section>
 
+      {/* FINAL CTA */}
       <motion.section
         initial="hidden"
         whileInView="visible"

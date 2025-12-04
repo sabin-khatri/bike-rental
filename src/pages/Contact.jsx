@@ -53,7 +53,7 @@ export default function Contact() {
 
   const onSubmit = (data) => {
     console.log("Form submitted:", data);
-    alert("Thank you! Hamro team le 2 ghanta bhitra contact garcha!");
+    alert("Thank you!");
     reset();
   };
 
