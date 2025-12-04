@@ -14,10 +14,18 @@ const BIKES = [
 ];
 
 const FEATURES = [
-  { title: "Fully Insured", desc: "Every rental includes comprehensive insurance – ride worry-free.", icon: "shield" },
-  { title: "24/7 Support", desc: "Mechanical help anytime, anywhere in Nepal.", icon: "clock" },
-  { title: "Latest Models", desc: "2023–2025 fleet, serviced after every ride.", icon: "zap" },
-  { title: "Free Delivery", desc: "Delivered to your hotel in Thamel or Pokhara – free of cost.", icon: "map" },
+  { title: "Fully Insured",
+     desc: "Every rental includes comprehensive insurance – ride worry-free.",
+      icon: "shield" },
+  { title: "24/7 Support", 
+    desc: "Mechanical help anytime, anywhere in Nepal.",
+     icon: "clock" },
+  { title: "Latest Models", 
+    desc: "2023–2025 fleet, serviced after every ride.", 
+    icon: "zap" },
+  { title: "Free Delivery", 
+    desc: "Delivered to your hotel in Thamel or Pokhara – free of cost.",
+     icon: "map" },
 ];
 
 const STATS = [
@@ -101,7 +109,7 @@ function Home() {
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
-      {/* HERO SECTION */}
+      
       <motion.section
         initial="hidden"
         animate="visible"
@@ -158,7 +166,6 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* STATS SECTION */}
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -178,7 +185,6 @@ function Home() {
         </div>
       </motion.div>
 
-      {/* WHY RIDE WITH US */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -213,7 +219,7 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* TOP BIKES */}
+   
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -270,7 +276,7 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* FINAL CTA */}
+      
       <motion.section
         initial="hidden"
         whileInView="visible"
