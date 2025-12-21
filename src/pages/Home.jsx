@@ -24,7 +24,7 @@ const FEATURES = [
     desc: "2023–2025 fleet, serviced after every ride.", 
     icon: "zap" },
   { title: "Free Delivery", 
-    desc: "Delivered to your hotel in Thamel or Pokhara – free of cost.",
+    desc: "Delivered to your hotel in Biratnagar and Belbari – free of cost.",
      icon: "map" },
 ];
 
@@ -138,7 +138,7 @@ function Home() {
           </motion.h1>
 
           <motion.p variants={fadeInUp} className="mt-6 text-lg md:text-2xl text-gray-200 max-w-3xl mx-auto font-light leading-relaxed">
-            Premium bikes • Full insurance • 24/7 support • Delivered to your hotel in Thamel or Pokhara
+            Premium bikes • Full insurance • 24/7 support • Delivered to your hotel in Biratnagar and Belbari
           </motion.p>
 
           <motion.div variants={fadeInUp} className="mt-12 flex flex-col sm:flex-row gap-5 justify-center">
