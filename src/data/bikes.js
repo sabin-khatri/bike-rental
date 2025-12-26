@@ -1,4 +1,4 @@
-// src/data/bikes.js
+
 export const bikes = [
   {
     id: 1,
@@ -48,7 +48,7 @@ export const bikes = [
     price: 1100,
     category: "Sport",
     location: "Biratnagar & Belbari",
-    image: "src/assets/bikes/apache.webp",
+    image: "src/assets/bikes/TVS Apache RTR 200.webp",
     rating: 4.8,
     popular: true,
     specs: { engine: "197cc", mileage: "40 kmpl", weight: "152 kg" }

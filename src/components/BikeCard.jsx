@@ -1,10 +1,32 @@
-
 import { Link } from "react-router-dom";
-import { MapPin, Star, ArrowRight } from "lucide-react";
+import React from "react";
 
-export default function BikeCard({ bike }) {
+// Simple SVG Icons
+const IconMapPin = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+const IconStar = () => (
+  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
+
+const IconArrowRight = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
+  </svg>
+);
+
+export default function BikeCard({ bike, onBook }) {
   return (
-    <div className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+    <div 
+      onClick={() => onBook && onBook(bike)}
+      className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100 cursor-pointer"
+    >
      
       {bike.popular && (
         <div className="absolute top-4 left-4 z-10">
@@ -29,12 +51,12 @@ export default function BikeCard({ bike }) {
         
         <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
           <div className="flex items-center gap-1">
-            <MapPin className="w-4 h-4 text-cyan-600" />
+            <IconMapPin />
             <span>{bike.location}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-500 fill-current" />
-            <span className="font-semibold">{bike.rating}</span>
+          <div className="flex items-center gap-1 text-yellow-500">
+            <IconStar />
+            <span className="font-semibold text-gray-600">{bike.rating}</span>
           </div>
         </div>
 
@@ -48,16 +70,13 @@ export default function BikeCard({ bike }) {
         </div>
 
       
-        <Link
-          to="/bikes"
-          className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-2xl flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-lg hover:shadow-cyan-500/50"
-        >
+        <div className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-2xl flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-lg hover:shadow-cyan-500/50">
           Book This Bike
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-        </Link>
+          <IconArrowRight />
+        </div>
 
         <div className="w-full py-4 bg-gray-100 text-gray-700 font-bold rounded-2xl text-center group-hover:opacity-0 transition-opacity duration-300">
-          View Details
+          Click to Book
         </div>
       </div>
     </div>

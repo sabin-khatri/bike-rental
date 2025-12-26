@@ -1,17 +1,8 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import { Link } from "react-router-dom";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-
-import royalEnfield from "../assets/bikes/royal-enfield.webp";
-import hondaXr from "../assets/bikes/hondaxr190.webp";
-import bajajPulsar from "../assets/bikes/bajaj220.webp";
-
-const BIKES = [
-  { id: 1, name: "Royal Enfield Classic 350", price: "Rs 800", tag: "Cruiser", img: royalEnfield },
-  { id: 2, name: "Honda XR 190", price: "Rs 1200", tag: "Off-Road", img: hondaXr },
-  { id: 3, name: "Bajaj Pulsar 220", price: "Rs 700", tag: "Street", img: bajajPulsar },
-];
+import { bikes } from "../data/bikes";
 
 const FEATURES = [
   { title: "Fully Insured",
@@ -106,6 +97,9 @@ function Home() {
       default: return <IconShield />;
     }
   };
+
+  // Get first 3 bikes for homepage
+  const featuredBikes = bikes.slice(0, 3);
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
@@ -235,18 +229,18 @@ function Home() {
           </motion.div>
 
           <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {BIKES.map((bike) => (
+            {featuredBikes.map((bike) => (
               <motion.div
                 key={bike.id}
                 variants={scaleIn}
                 className="group relative h-96 rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
               >
-                <img src={bike.img} alt={bike.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <img src={bike.image} alt={bike.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 
                 <div className="absolute top-6 left-6">
                   <span className="px-4 py-1 bg-white/10 backdrop-blur border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {bike.tag}
+                    {bike.category}
                   </span>
                 </div>
 
@@ -256,23 +250,29 @@ function Home() {
                   </h3>
                   <div className="flex justify-between items-end">
                     <div>
-                      <span className="text-3xl md:text-4xl font-black text-cyan-400">{bike.price}</span>
+                      <span className="text-3xl md:text-4xl font-black text-cyan-400">Rs {bike.price}</span>
                       <span className="text-gray-300 text-sm ml-2">/day</span>
                     </div>
-                    <span className="bg-cyan-500 text-black px-6 py-3 rounded-full font-bold opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2">
+                    <Link 
+                      to="/bikes"
+                      className="bg-cyan-500 text-black px-6 py-3 rounded-full font-bold opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2"
+                    >
                       Book <IconArrowRight />
-                    </span>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
 
-          <div className="text-center mt-12">
-            <Link to="/bikes" className="inline-flex items-center gap-3 text-cyan-400 font-bold hover:text-cyan-300 transition-colors">
-              View All Bikes <IconArrowRight />
+          <motion.div variants={fadeInUp} className="text-center mt-16">
+            <Link 
+              to="/bikes" 
+              className="inline-block px-12 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xl rounded-full shadow-2xl hover:shadow-cyan-500/50 hover:scale-105 transition-all duration-300"
+            >
+              View All Bikes
             </Link>
-          </div>
+          </motion.div>
         </div>
       </motion.section>
 
