@@ -75,7 +75,7 @@ function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
             
-            {/* Logo */}
+            
             <Link to="/" className="flex items-center gap-2 lg:gap-3 z-50 group">
               <motion.div 
                 whileHover={{ 
@@ -285,7 +285,7 @@ function Navbar() {
                   })}
                 </div>
 
-                {/* CTA Button - Mobile */}
+                
                 <motion.div 
                   variants={linkVariants}
                   className="mt-auto"
