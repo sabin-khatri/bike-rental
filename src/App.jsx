@@ -23,6 +23,7 @@ function ScrollToTop() {
 function App() {
   return (
     <>
+    <ScrollToTop />
 
     <Navbar />
     <Routes>
