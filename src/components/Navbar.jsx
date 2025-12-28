@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/purity */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -7,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [bikeTransition, setBikeTransition] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -21,13 +19,6 @@ function Navbar() {
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
   }, [mobileMenuOpen]);
-
-  const handleNavClick = (path) => {
-    if (path !== location.pathname) {
-      setBikeTransition(true);
-      setTimeout(() => setBikeTransition(false), 1200);
-    }
-  };
 
   const isHome = location.pathname === "/";
   const navLinks = [
@@ -87,7 +78,6 @@ function Navbar() {
             <Link
               to="/"
               className="flex items-center gap-2 lg:gap-3 z-50 group"
-              onClick={() => handleNavClick("/")}
             >
               <motion.div
                 whileHover={{
@@ -148,7 +138,7 @@ function Navbar() {
               {navLinks.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
-                  <Link key={item.name} to={item.path} onClick={() => handleNavClick(item.path)}>
+                  <Link key={item.name} to={item.path}>
                     <motion.div
                       whileHover={{ y: -3 }}
                       whileTap={{ scale: 0.95 }}
@@ -217,7 +207,7 @@ function Navbar() {
             </div>
 
             {/* Book Now Button */}
-            <Link to="/bikes" className="hidden lg:block" onClick={() => handleNavClick('/bikes')}>
+            <Link to="/bikes" className="hidden lg:block">
               <motion.button
                 whileHover={{
                   scale: 1.08,
@@ -327,112 +317,6 @@ function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Bike Transition Animation */}
-      <AnimatePresence>
-        {bikeTransition && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[60] pointer-events-none overflow-hidden"
-          >
-            {/* Road/Path */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              exit={{ scaleX: 0 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent origin-left"
-              style={{ transform: "translateY(-50%)" }}
-            />
-            
-            {/* Bike Icon */}
-            <motion.div
-              initial={{ x: "-10%", opacity: 0 }}
-              animate={{ 
-                x: "110%", 
-                opacity: [0, 1, 1, 0],
-              }}
-              transition={{ 
-                duration: 1.2, 
-                ease: [0.43, 0.13, 0.23, 0.96],
-                opacity: {
-                  times: [0, 0.1, 0.8, 1],
-                  duration: 1.2
-                }
-              }}
-              className="absolute top-1/2 -translate-y-1/2 text-4xl"
-            >
-              🏍️
-            </motion.div>
-            
-            {/* Speed lines */}
-            {[...Array(5)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ x: "0%", opacity: 0, scaleX: 0 }}
-                animate={{ 
-                  x: "100%", 
-                  opacity: [0, 0.6, 0],
-                  scaleX: [0, 1, 0.5, 0]
-                }}
-                transition={{ 
-                  duration: 0.8,
-                  delay: i * 0.08,
-                  ease: "easeOut"
-                }}
-                className="absolute h-0.5 bg-cyan-400/60 rounded-full"
-                style={{
-                  top: `calc(50% + ${(i - 2) * 15}px)`,
-                  left: 0,
-                  width: `${100 + i * 20}px`,
-                }}
-              />
-            ))}
-            
-            {/* Particles trail */}
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={`particle-${i}`}
-                initial={{ 
-                  x: "20%",
-                  y: "50%",
-                  scale: 0,
-                  opacity: 0 
-                }}
-                animate={{ 
-                  x: "80%",
-                  y: `${50 + (Math.random() - 0.5) * 40}%`,
-                  scale: [0, 1, 0],
-                  opacity: [0, 1, 0]
-                }}
-                transition={{ 
-                  duration: 1,
-                  delay: i * 0.1,
-                  ease: "easeOut"
-                }}
-                className="absolute w-2 h-2 bg-cyan-400 rounded-full blur-sm"
-              />
-            ))}
-            
-            {/* Glow effect */}
-            <motion.div
-              initial={{ x: "-20%", opacity: 0 }}
-              animate={{ 
-                x: "120%", 
-                opacity: [0, 0.6, 0]
-              }}
-              transition={{ 
-                duration: 1.2,
-                ease: "easeInOut"
-              }}
-              className="absolute top-1/2 -translate-y-1/2 w-64 h-32 bg-cyan-500/30 rounded-full blur-3xl"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
@@ -469,10 +353,7 @@ function Navbar() {
                       >
                         <Link
                           to={item.path}
-                          onClick={() => {
-                            handleNavClick(item.path);
-                            setMobileMenuOpen(false);
-                          }}
+                          onClick={() => setMobileMenuOpen(false)}
                           className={`relative block px-5 py-4 rounded-xl font-semibold text-lg transition-all duration-300 overflow-hidden ${
                             isActive
                               ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30"
@@ -521,10 +402,7 @@ function Navbar() {
                   variants={linkVariants} 
                   className="mt-auto space-y-4"
                 >
-                  <Link to="/bikes" onClick={() => {
-                    handleNavClick('/bikes');
-                    setMobileMenuOpen(false);
-                  }}>
+                  <Link to="/bikes" onClick={() => setMobileMenuOpen(false)}>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       whileHover={{ scale: 1.02 }}
