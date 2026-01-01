@@ -3,9 +3,24 @@ import React from "react";
 
 // Simple SVG Icons
 const IconMapPin = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+    />
   </svg>
 );
 
@@ -16,18 +31,27 @@ const IconStar = () => (
 );
 
 const IconArrowRight = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 12h14m-7-7l7 7-7 7"
+    />
   </svg>
 );
 
 export default function BikeCard({ bike, onBook }) {
   return (
-    <div 
+    <div
       onClick={() => onBook && onBook(bike)}
       className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100 cursor-pointer"
     >
-     
       {bike.popular && (
         <div className="absolute top-4 left-4 z-10">
           <span className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs font-bold rounded-full shadow-lg">
@@ -36,7 +60,6 @@ export default function BikeCard({ bike, onBook }) {
         </div>
       )}
 
-      
       <div className="relative h-64 overflow-hidden">
         <img
           src={bike.image}
@@ -48,7 +71,7 @@ export default function BikeCard({ bike, onBook }) {
 
       <div className="p-6">
         <h3 className="text-2xl font-black text-gray-900 mb-2">{bike.name}</h3>
-        
+
         <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
           <div className="flex items-center gap-1">
             <IconMapPin />
@@ -69,7 +92,6 @@ export default function BikeCard({ bike, onBook }) {
           </div>
         </div>
 
-      
         <div className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-2xl flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-lg hover:shadow-cyan-500/50">
           Book This Bike
           <IconArrowRight />

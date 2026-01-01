@@ -307,7 +307,7 @@ export default function About() {
             {
               name: "Priya Shrestha",
               role: "Support Head",
-              img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e", 
+              img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
             },
           ].map((person, i) => (
             <motion.div

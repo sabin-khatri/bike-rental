@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/purity */
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 function Navbar() {
@@ -83,7 +83,6 @@ function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
-            {/* Logo */}
             <Link
               to="/"
               className="flex items-center gap-2 lg:gap-3 z-50 group"
@@ -104,14 +103,12 @@ function Navbar() {
               >
                 <span className="drop-shadow-lg relative z-10">BR</span>
 
-                {/* Glow effect */}
                 <motion.div
                   className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-400 to-blue-500 opacity-0 blur-md"
                   whileHover={{ opacity: 0.8, scale: 1.4 }}
                   transition={{ duration: 0.3 }}
                 />
 
-                {/* Rotating ring */}
                 <motion.div
                   className="absolute inset-0 rounded-xl border-2 border-cyan-400/60"
                   animate={{ rotate: 360 }}
@@ -120,7 +117,6 @@ function Navbar() {
                   whileHover={{ opacity: 1 }}
                 />
 
-                {/* Pulse effect */}
                 <motion.div
                   className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500"
                   animate={{
@@ -157,7 +153,6 @@ function Navbar() {
               </motion.span>
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
               {navLinks.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -188,7 +183,6 @@ function Navbar() {
                       >
                         {item.name}
 
-                        {/* Shine effect */}
                         <motion.span
                           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
                           initial={{ x: "-100%", opacity: 0 }}
@@ -197,7 +191,6 @@ function Navbar() {
                         />
                       </span>
 
-                      {/* Active underline with glow */}
                       <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
                         <motion.span
                           className={`block h-0.5 bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-full transition-all duration-300 ${
@@ -225,7 +218,6 @@ function Navbar() {
                         )}
                       </div>
 
-                      {/* Hover background */}
                       <motion.div
                         className={`absolute inset-0 rounded-lg ${
                           isHome && !scrolled
@@ -243,7 +235,6 @@ function Navbar() {
               })}
             </div>
 
-            {/* Book Now Button */}
             <Link
               to="/bikes"
               className="hidden lg:block"
@@ -273,7 +264,6 @@ function Navbar() {
                   </motion.span>
                 </span>
 
-                {/* Animated gradient overlay */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-600 to-blue-600 opacity-0"
                   initial={{ x: "-100%" }}
@@ -284,7 +274,6 @@ function Navbar() {
                   transition={{ duration: 0.6 }}
                 />
 
-                {/* Glow effect */}
                 <motion.div
                   className="absolute inset-0 rounded-full opacity-0 blur-xl"
                   whileHover={{ opacity: 0.7 }}
@@ -294,7 +283,6 @@ function Navbar() {
                   }}
                 />
 
-                {/* Particles effect */}
                 {[...Array(5)].map((_, i) => (
                   <motion.div
                     key={i}
@@ -315,7 +303,6 @@ function Navbar() {
               </motion.button>
             </Link>
 
-            {/* Mobile Menu Button */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -358,7 +345,6 @@ function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Bike Transition Animation */}
       <AnimatePresence>
         {bikeTransition && (
           <motion.div
@@ -368,7 +354,6 @@ function Navbar() {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[60] pointer-events-none overflow-hidden"
           >
-            {/* Road/Path */}
             <motion.div
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
@@ -378,7 +363,6 @@ function Navbar() {
               style={{ transform: "translateY(-50%)" }}
             />
 
-            {/* Secondary road line */}
             <motion.div
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
@@ -388,7 +372,6 @@ function Navbar() {
               style={{ transform: "translateY(-50%) translateY(5px)" }}
             />
 
-            {/* Bike Icon */}
             <motion.div
               initial={{ x: "-10%", opacity: 0 }}
               animate={{
@@ -411,7 +394,6 @@ function Navbar() {
               🏍️
             </motion.div>
 
-            {/* Speed lines */}
             {[...Array(7)].map((_, i) => (
               <motion.div
                 key={i}
@@ -437,7 +419,6 @@ function Navbar() {
               />
             ))}
 
-            {/* Particles trail */}
             {[...Array(12)].map((_, i) => (
               <motion.div
                 key={`particle-${i}`}
@@ -468,7 +449,6 @@ function Navbar() {
               />
             ))}
 
-            {/* Glow effect */}
             <motion.div
               initial={{ x: "-20%", opacity: 0 }}
               animate={{
@@ -482,7 +462,6 @@ function Navbar() {
               className="absolute top-1/2 -translate-y-1/2 w-80 h-40 bg-gradient-to-r from-purple-500/30 via-cyan-500/30 to-blue-500/30 rounded-full blur-3xl"
             />
 
-            {/* Multiple glowing rings */}
             {[...Array(3)].map((_, i) => (
               <motion.div
                 key={`ring-${i}`}
@@ -504,11 +483,9 @@ function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -518,7 +495,6 @@ function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
             />
 
-            {/* Menu Panel */}
             <motion.div
               initial="closed"
               animate="open"
@@ -527,7 +503,6 @@ function Navbar() {
               className="fixed top-0 right-0 bottom-0 w-full sm:w-80 bg-gradient-to-br from-white via-purple-50/30 to-cyan-50/30 shadow-2xl z-40 lg:hidden overflow-y-auto"
             >
               <div className="flex flex-col h-full pt-24 pb-8 px-6">
-                {/* Navigation Links */}
                 <div className="flex flex-col gap-2">
                   {navLinks.map((item, index) => {
                     const isActive = location.pathname === item.path;
@@ -562,7 +537,6 @@ function Navbar() {
                             )}
                           </span>
 
-                          {/* Shine effect */}
                           {!isActive && (
                             <motion.div
                               className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-100 to-transparent"
@@ -572,7 +546,6 @@ function Navbar() {
                             />
                           )}
 
-                          {/* Active indicator */}
                           {isActive && (
                             <>
                               <motion.div
@@ -594,7 +567,6 @@ function Navbar() {
                   })}
                 </div>
 
-                {/* CTA Button */}
                 <motion.div
                   variants={linkVariants}
                   className="mt-auto space-y-4"
@@ -621,7 +593,6 @@ function Navbar() {
                         </motion.span>
                       </span>
 
-                      {/* Animated shine */}
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                         animate={{ x: ["-100%", "100%"] }}
@@ -632,7 +603,6 @@ function Navbar() {
                         }}
                       />
 
-                      {/* Glow */}
                       <motion.div
                         className="absolute inset-0 blur-xl opacity-50"
                         animate={{
@@ -647,7 +617,6 @@ function Navbar() {
                     </motion.button>
                   </Link>
 
-                  {/* Footer text */}
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

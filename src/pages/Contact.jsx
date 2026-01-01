@@ -3,7 +3,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 
-
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
@@ -24,21 +23,56 @@ const scaleIn = {
 
 // Icons
 const IconPhone = () => (
-  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+  <svg
+    className="w-7 h-7"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+    />
   </svg>
 );
 
 const IconMail = () => (
-  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  <svg
+    className="w-7 h-7"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+    />
   </svg>
 );
 
 const IconMapPin = () => (
-  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  <svg
+    className="w-7 h-7"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+    />
   </svg>
 );
 
@@ -49,7 +83,12 @@ const IconWhatsapp = () => (
 );
 
 export default function Contact() {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   const onSubmit = (data) => {
     console.log("Form submitted:", data);
@@ -59,7 +98,6 @@ export default function Contact() {
 
   return (
     <div className="bg-slate-50 min-h-screen overflow-x-hidden font-sans">
-     
       <motion.section
         initial="hidden"
         animate="visible"
@@ -102,7 +140,6 @@ export default function Contact() {
         </div>
       </motion.section>
 
-    
       <section className="py-24 px-6 -mt-20 relative z-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12">
           {/* Left Side */}
@@ -112,15 +149,33 @@ export default function Contact() {
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <motion.h2 variants={fadeInUp} className="text-4xl md:text-6xl font-black text-gray-900 mb-12">
+            <motion.h2
+              variants={fadeInUp}
+              className="text-4xl md:text-6xl font-black text-gray-900 mb-12"
+            >
               We're Here to Help
             </motion.h2>
 
             <div className="space-y-8">
               {[
-                { icon: IconPhone, title: "Phone / WhatsApp", info: "+977 984-XXXXXXX", color: "cyan" },
-                { icon: IconMail, title: "Email Us", info: "contact@nepalbikerental.com", color: "purple" },
-                { icon: IconMapPin, title: "Visit Us", info: "Main Road, Biratnagar\nThamel, Kathmandu\nLakeside, Pokhara", color: "blue" },
+                {
+                  icon: IconPhone,
+                  title: "Phone / WhatsApp",
+                  info: "+977 984-XXXXXXX",
+                  color: "cyan",
+                },
+                {
+                  icon: IconMail,
+                  title: "Email Us",
+                  info: "contact@nepalbikerental.com",
+                  color: "purple",
+                },
+                {
+                  icon: IconMapPin,
+                  title: "Visit Us",
+                  info: "Main Road, Biratnagar\nThamel, Kathmandu\nLakeside, Pokhara",
+                  color: "blue",
+                },
               ].map((item, i) => (
                 <motion.div
                   key={i}
@@ -128,20 +183,28 @@ export default function Contact() {
                   className="group bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100"
                 >
                   <div className="flex items-start gap-6">
-                    <div className={`w-16 h-16 rounded-2xl bg-${item.color}-100 text-${item.color}-600 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`w-16 h-16 rounded-2xl bg-${item.color}-100 text-${item.color}-600 flex items-center justify-center group-hover:scale-110 transition-transform`}
+                    >
                       <item.icon />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-gray-700 whitespace-pre-line text-lg font-medium">{item.info}</p>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        {item.title}
+                      </h3>
+                      <p className="text-gray-700 whitespace-pre-line text-lg font-medium">
+                        {item.info}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
               ))}
             </div>
 
-        
-            <motion.div variants={fadeInUp} className="mt-12 flex flex-col sm:flex-row gap-6">
+            <motion.div
+              variants={fadeInUp}
+              className="mt-12 flex flex-col sm:flex-row gap-6"
+            >
               <a
                 href="tel:+977984XXXXXX"
                 className="px-10 py-5 bg-cyan-500 text-black font-bold text-xl rounded-full shadow-2xl hover:shadow-cyan-500/50 hover:bg-cyan-400 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
@@ -166,8 +229,12 @@ export default function Contact() {
             transition={{ duration: 0.8 }}
             className="bg-white rounded-3xl shadow-2xl p-10 md:p-14 border border-gray-100"
           >
-            <h3 className="text-4xl font-black text-gray-900 mb-4">Send us a Message</h3>
-            <p className="text-gray-600 mb-10 text-lg">We reply within 2 hours — guaranteed!</p>
+            <h3 className="text-4xl font-black text-gray-900 mb-4">
+              Send us a Message
+            </h3>
+            <p className="text-gray-600 mb-10 text-lg">
+              We reply within 2 hours — guaranteed!
+            </p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
               <div className="grid md:grid-cols-2 gap-7">
@@ -184,7 +251,10 @@ export default function Contact() {
               </div>
 
               <input
-                {...register("email", { required: "Email required", pattern: { value: /^\S+@\S+$/i, message: "Invalid email" } })}
+                {...register("email", {
+                  required: "Email required",
+                  pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
+                })}
                 type="email"
                 placeholder="Your Email"
                 className="w-full px-6 py-5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all text-lg"
@@ -197,8 +267,13 @@ export default function Contact() {
                 className="w-full px-6 py-5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all resize-none text-lg"
               />
 
-              {(errors.name || errors.email || errors.phone || errors.message) && (
-                <p className="text-red-500 font-medium">Please fill all fields correctly</p>
+              {(errors.name ||
+                errors.email ||
+                errors.phone ||
+                errors.message) && (
+                <p className="text-red-500 font-medium">
+                  Please fill all fields correctly
+                </p>
               )}
 
               <motion.button
@@ -214,7 +289,6 @@ export default function Contact() {
         </div>
       </section>
 
-  
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -223,10 +297,16 @@ export default function Contact() {
         className="py-24 px-6 bg-gray-900"
       >
         <div className="max-w-7xl mx-auto text-center">
-          <motion.h2 variants={fadeInUp} className="text-4xl md:text-6xl font-black text-white mb-12">
+          <motion.h2
+            variants={fadeInUp}
+            className="text-4xl md:text-6xl font-black text-white mb-12"
+          >
             Find Us in Biratnagar
           </motion.h2>
-          <motion.div variants={scaleIn} className="rounded-3xl overflow-hidden shadow-2xl h-96 md:h-[550px]">
+          <motion.div
+            variants={scaleIn}
+            className="rounded-3xl overflow-hidden shadow-2xl h-96 md:h-[550px]"
+          >
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57112.51268383808!2d87.24354747432098!3d26.45233157501757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ef744704331cc5%3A0x6d9a852652399d94!2sBiratnagar!5e0!3m2!1sen!2snp!4v1700000000000!5m2!1sen!2snp"
               width="100%"

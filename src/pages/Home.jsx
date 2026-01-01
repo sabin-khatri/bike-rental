@@ -5,18 +5,10 @@ import { motion } from "framer-motion";
 import { bikes } from "../data/bikes";
 
 const FEATURES = [
-  { title: "Fully Insured",
-     desc: "Every rental includes comprehensive insurance – ride worry-free.",
-      icon: "shield" },
-  { title: "24/7 Support", 
-    desc: "Mechanical help anytime, anywhere in Nepal.",
-     icon: "clock" },
-  { title: "Latest Models", 
-    desc: "2023–2025 fleet, serviced after every ride.", 
-    icon: "zap" },
-  { title: "Free Delivery", 
-    desc: "Delivered to your hotel in Biratnagar and Belbari – free of cost.",
-     icon: "map" },
+  { title: "Fully Insured", desc: "Every rental includes comprehensive insurance – ride worry-free.", icon: "shield" },
+  { title: "24/7 Support", desc: "Mechanical help anytime, anywhere in Nepal.", icon: "clock" },
+  { title: "Latest Models", desc: "2023–2025 fleet, serviced after every ride.", icon: "zap" },
+  { title: "Free Delivery", desc: "Delivered to your hotel in Biratnagar and Belbari – free of cost.", icon: "map" },
 ];
 
 const STATS = [
@@ -26,7 +18,6 @@ const STATS = [
   { num: "24/7", label: "Road Support" },
 ];
 
-// Animation Variants
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
@@ -54,24 +45,14 @@ const scaleIn = {
 
 const floatAnimation = {
   y: [0, -20, 0],
-  transition: {
-    duration: 3,
-    repeat: Infinity,
-    ease: "easeInOut"
-  }
+  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" }
 };
 
 const rotateIn = {
   hidden: { opacity: 0, rotate: -10, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
-    rotate: 0, 
-    scale: 1, 
-    transition: { duration: 0.8, ease: "easeOut" } 
-  },
+  visible: { opacity: 1, rotate: 0, scale: 1, transition: { duration: 0.8, ease: "easeOut" } },
 };
 
-// Icons
 const IconArrowRight = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
@@ -127,13 +108,11 @@ function Home() {
     }
   };
 
-  // Get first 3 bikes for homepage
   const featuredBikes = bikes.slice(0, 3);
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
       
-      {/* Hero Section */}
       <motion.section
         initial="hidden"
         animate="visible"
@@ -165,9 +144,7 @@ function Home() {
             Ride Beyond <br className="hidden md:block" />
             <motion.span 
               className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
-              animate={{ 
-                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-              }}
+              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
               transition={{ duration: 5, repeat: Infinity }}
               style={{ backgroundSize: '200% 200%' }}
             >
@@ -208,7 +185,6 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* Stats Section */}
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -222,10 +198,7 @@ function Home() {
               <motion.div 
                 key={i} 
                 variants={fadeInUp}
-                whileHover={{ 
-                  scale: 1.1, 
-                  transition: { duration: 0.3 } 
-                }}
+                whileHover={{ scale: 1.1, transition: { duration: 0.3 } }}
               >
                 <motion.h3 
                   className="text-4xl md:text-5xl font-black text-gray-800"
@@ -243,7 +216,6 @@ function Home() {
         </div>
       </motion.div>
 
-      {/* Features Section */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -287,7 +259,6 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* Featured Bikes Section */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -382,7 +353,6 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* CTA Section */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -390,7 +360,6 @@ function Home() {
         variants={staggerContainer}
         className="py-32 bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-900 text-center px-6 relative overflow-hidden"
       >
-        {/* Animated background elements */}
         <motion.div 
           className="absolute top-20 left-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl"
           animate={{ 
