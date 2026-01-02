@@ -38,7 +38,7 @@ export const bikes = [
     price: 900,
     category: "Street",
     location: "Biratnagar Only",
-    image: "/bikes/Yahamafzs.avif",
+    image: "public/bikes/yahama.webp",
     rating: 4.6,
     specs: { engine: "149cc", mileage: "48 kmpl", weight: "135 kg" }
   },
