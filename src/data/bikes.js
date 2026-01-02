@@ -6,7 +6,7 @@ export const bikes = [
     price: 1500, 
     category: "Cruiser",
     location: "Biratnagar",
-    image: "src/assets/bikes/royal-enfield.webp",
+    image: "../src/bikes/royal-enfield.webp",
     rating: 4.9,
     popular: true,
     specs: { engine: "346cc", mileage: "35 kmpl", weight: "195 kg" }
@@ -17,7 +17,7 @@ export const bikes = [
     price: 1000,
     category: "Street",
     location: "Biratnagar & Belbari",
-    image: "src/assets/bikes/bajaj220.webp",
+    image: "../src/bikes/bajaj220.webp",
     rating: 4.7,
     popular: true,
     specs: { engine: "200cc", mileage: "40 kmpl", weight: "158 kg" }
@@ -28,7 +28,7 @@ export const bikes = [
     price: 1800,
     category: "Adventure",
     location: "Belbari",
-    image: "src/assets/bikes/hondaxr190.webp",
+    image: "../src/bikes/hondaxr190.webp",
     rating: 4.8,
     specs: { engine: "184cc", mileage: "45 kmpl", weight: "132 kg" }
   },
@@ -38,7 +38,7 @@ export const bikes = [
     price: 900,
     category: "Street",
     location: "Biratnagar Only",
-    image: "src/assets/bikes/yamahafzs.avif",
+    image: "../src/bikes/yamahafzs.avif",
     rating: 4.6,
     specs: { engine: "149cc", mileage: "48 kmpl", weight: "135 kg" }
   },
@@ -48,7 +48,7 @@ export const bikes = [
     price: 1100,
     category: "Sport",
     location: "Biratnagar & Belbari",
-    image: "src/assets/bikes/TVS Apache RTR 200.webp",
+    image: "../src/bikes/TVS Apache RTR 200.webp",
     rating: 4.8,
     popular: true,
     specs: { engine: "197cc", mileage: "40 kmpl", weight: "152 kg" }
@@ -59,7 +59,7 @@ export const bikes = [
     price: 1200,
     category: "Street",
     location: "Belbari",
-    image: "src/assets/bikes/mt15.png",
+    image: "../src/bikes/mt15.png",
     rating: 4.5,
     specs: { engine: "155cc", mileage: "40 kmpl", weight: "140 kg" }
   }

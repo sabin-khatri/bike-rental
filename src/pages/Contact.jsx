@@ -106,7 +106,7 @@ export default function Contact() {
       >
         <div className="absolute inset-0">
           <img
-            src="src/assets/bikes/contact.webp"
+            src="../src/bikes/contact.webp"
             alt="Contact Us - Nepal Bike Rental"
             className="w-full h-full object-cover"
           />

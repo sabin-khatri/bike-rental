@@ -24,7 +24,7 @@ export default function About() {
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src="src/assets/bikes/about.png"
+            src="../src/bikes/about.png"
             alt="Riding in Nepal"
             className="w-full h-full object-cover scale-105"
           />
@@ -122,7 +122,7 @@ export default function About() {
           >
             <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
             <img
-              src="src/assets/bikes/story.webp"
+              src="../src/bikes/story.webp"
               alt="Our Story"
               className="relative rounded-3xl shadow-2xl w-full object-cover transform transition duration-500 hover:scale-[1.02]"
             />
@@ -140,7 +140,7 @@ export default function About() {
               className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-700"
             >
               <img
-                src="src/assets/bikes/vision.png"
+                src="../src/bikes/vision.png"
                 alt="Vision"
                 className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
               />
