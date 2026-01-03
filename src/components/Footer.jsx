@@ -6,7 +6,7 @@ const Footer = () => {
     { name: "Our Bikes", path: "/bikes" },
     { name: "About Us", path: "/about" },
     { name: "Contact", path: "/contact" },
-    { name: "Terms & Conditions", path: "/terms" },
+    { name: "Terms & Conditions", path: "" },
   ];
 
   const socialLinks = [
@@ -251,13 +251,13 @@ const Footer = () => {
           </p>
           <div className="flex gap-6 text-sm text-slate-500">
             <a
-              href="/privacy"
+              href="/"
               className="hover:text-cyan-400 transition-colors hover:-translate-y-0.5 inline-block"
             >
               Privacy Policy
             </a>
             <a
-              href="/terms"
+              href="/"
               className="hover:text-cyan-400 transition-colors hover:-translate-y-0.5 inline-block"
             >
               Terms of Service
