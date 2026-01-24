@@ -1,4 +1,7 @@
+/* eslint-disable react-hooks/purity */
 import React from "react";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 
 const Footer = () => {
   const quickLinks = [
@@ -125,74 +128,358 @@ const Footer = () => {
     },
   ];
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 30,
+      scale: 0.95 
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
+
+  const socialIconVariants = {
+    hidden: { scale: 0, rotate: -180 },
+    visible: (i) => ({
+      scale: 1,
+      rotate: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        type: "spring",
+        stiffness: 200,
+        damping: 15
+      }
+    }),
+    hover: {
+      scale: 1.2,
+      rotate: 10,
+      transition: {
+        duration: 0.3,
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    }
+  };
+
+  const contactItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.15 + 0.4,
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }),
+    hover: {
+      x: 5,
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut"
+      }
+    }
+  };
+
+  const quickLinkVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: (i) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.1 + 0.3,
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }),
+    hover: {
+      x: 5,
+      color: "#22d3ee",
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut"
+      }
+    }
+  };
+
+  const logoVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.7,
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    },
+    hover: {
+      scale: 1.05,
+      transition: {
+        duration: 0.3,
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: {
+      scale: 1.1,
+      rotate: 5,
+      boxShadow: "0 10px 25px -5px rgba(6, 182, 212, 0.4)",
+      transition: {
+        duration: 0.3,
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    },
+    tap: {
+      scale: 0.95,
+      rotate: -5
+    }
+  };
+
+  const inputFocusVariants = {
+    focus: {
+      scale: 1.02,
+      boxShadow: "0 0 0 2px rgba(6, 182, 212, 0.3)",
+      transition: {
+        duration: 0.2
+      }
+    }
+  };
+
   return (
-    <footer className="bg-slate-950 text-slate-300 pt-20 pb-10 border-t border-white/5 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-cyan-900/10 blur-[100px] rounded-full pointer-events-none animate-pulse" />
-      <div
-        className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full pointer-events-none animate-pulse"
-        style={{ animationDelay: "1s" }}
+    <motion.footer
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      variants={containerVariants}
+      className="bg-slate-950 text-slate-300 pt-20 pb-10 border-t border-white/5 relative overflow-hidden"
+    >
+      {/* Animated background elements */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ 
+          opacity: [0.1, 0.2, 0.1],
+          scale: [1, 1.1, 1],
+          x: [0, 20, 0],
+          y: [0, -10, 0]
+        }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          repeatType: "reverse",
+          ease: "easeInOut"
+        }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-cyan-900/10 blur-[100px] rounded-full pointer-events-none"
       />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ 
+          opacity: [0.1, 0.15, 0.1],
+          scale: [1, 1.2, 1],
+          x: [0, -15, 0],
+          y: [0, 10, 0]
+        }}
+        transition={{
+          duration: 5,
+          delay: 1,
+          repeat: Infinity,
+          repeatType: "reverse",
+          ease: "easeInOut"
+        }}
+        className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full pointer-events-none"
+      />
+
+      {/* Floating particles */}
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ 
+            opacity: 0,
+            scale: 0,
+            x: Math.random() * 100 - 50,
+            y: Math.random() * 100 - 50
+          }}
+          animate={{ 
+            opacity: [0, 0.3, 0],
+            scale: [0, 1, 0],
+            x: [0, Math.random() * 200 - 100],
+            y: [0, Math.random() * 200 - 100]
+          }}
+          transition={{
+            duration: 4 + Math.random() * 3,
+            delay: Math.random() * 2,
+            repeat: Infinity,
+            repeatDelay: Math.random() * 3,
+            ease: "linear"
+          }}
+          className={`absolute w-1 h-1 rounded-full ${
+            i % 2 === 0 ? 'bg-cyan-400' : 'bg-blue-400'
+          }`}
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+        />
+      ))}
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          <div className="space-y-6">
-            <a href="/" className="flex items-center gap-3 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-900/20 transition-transform hover:scale-105">
+          {/* Logo & Description Section */}
+          <motion.div 
+            variants={itemVariants}
+            className="space-y-6"
+          >
+            <motion.a
+              href="/"
+              className="flex items-center gap-3 group"
+              variants={logoVariants}
+              whileHover="hover"
+            >
+              <motion.div 
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+                className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-900/20"
+              >
                 <span className="font-black text-white text-xl">BR</span>
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-black text-white">
                 BikeRental<span className="text-cyan-400">.</span>
               </h3>
-            </a>
-            <p className="text-slate-400 leading-relaxed text-sm">
+            </motion.a>
+            
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="text-slate-400 leading-relaxed text-sm"
+            >
               Nepal's most trusted bike rental service. From city streets to
               Himalayan trails, we provide the ride of your life.
-            </p>
+            </motion.p>
 
             <div className="flex gap-4 pt-2">
-              {socialLinks.map((social) => (
-                <a
+              {socialLinks.map((social, i) => (
+                <motion.a
                   key={social.name}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-10 h-10 rounded-full ${social.bgColor} ${social.hoverBg} flex items-center justify-center text-white shadow-lg transition-all hover:scale-110 hover:-translate-y-1 hover:shadow-xl`}
+                  custom={i}
+                  variants={socialIconVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  whileTap="tap"
+                  className={`w-10 h-10 rounded-full ${social.bgColor} ${social.hoverBg} flex items-center justify-center text-white shadow-lg relative overflow-hidden`}
                   aria-label={social.name}
                 >
+                  {/* Hover shine effect */}
+                  <motion.div
+                    initial={{ x: "-100%", rotate: 45 }}
+                    whileHover={{ x: "100%" }}
+                    transition={{ duration: 0.6 }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  />
                   {social.icon}
-                </a>
+                </motion.a>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-white">Explore</h4>
+          {/* Quick Links Section */}
+          <motion.div variants={itemVariants}>
+            <motion.h4 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-lg font-bold mb-6 text-white"
+            >
+              Explore
+            </motion.h4>
             <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.name}>
+              {quickLinks.map((link, i) => (
+                <motion.li
+                  key={link.name}
+                  custom={i}
+                  variants={quickLinkVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                >
                   <a
                     href={link.path}
-                    className="text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-2 group"
+                    className="text-slate-400 transition-colors flex items-center gap-2 group"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/50 group-hover:bg-cyan-400 transition-colors group-hover:scale-150" />
+                    <motion.span
+                      whileHover={{ scale: 1.5, rotate: 180 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-1.5 h-1.5 rounded-full bg-cyan-500/50 group-hover:bg-cyan-400"
+                    />
                     {link.name}
                   </a>
-                </li>
+                </motion.li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-white">Contact</h4>
+          {/* Contact Section */}
+          <motion.div variants={itemVariants}>
+            <motion.h4 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-lg font-bold mb-6 text-white"
+            >
+              Contact
+            </motion.h4>
             <div className="space-y-5">
-              {contactInfo.map((item) => (
-                <div
+              {contactInfo.map((item, i) => (
+                <motion.div
                   key={item.title}
-                  className="flex items-start gap-4 group hover:translate-x-1 transition-transform"
+                  custom={i}
+                  variants={contactItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  className="flex items-start gap-4"
                 >
-                  <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0 text-cyan-400 group-hover:bg-cyan-500/20 transition-colors">
+                  <motion.div
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0 text-cyan-400"
+                  >
                     {item.icon}
-                  </div>
+                  </motion.div>
                   <div>
                     <p className="text-white font-medium">{item.title}</p>
                     {item.href ? (
@@ -206,26 +493,47 @@ const Footer = () => {
                       <p className="text-sm text-slate-400">{item.content}</p>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-white">Stay Updated</h4>
-            <p className="text-slate-400 text-sm mb-6">
+          {/* Newsletter Section */}
+          <motion.div variants={itemVariants}>
+            <motion.h4 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-lg font-bold mb-6 text-white"
+            >
+              Stay Updated
+            </motion.h4>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="text-slate-400 text-sm mb-6"
+            >
               Subscribe to get latest offers and seasonal discounts directly in
               your inbox.
-            </p>
-            <div className="relative group">
-              <input
+            </motion.p>
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="relative group"
+            >
+              <motion.input
+                whileFocus="focus"
+                variants={inputFocusVariants}
                 type="email"
                 placeholder="Enter your email"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none transition-all"
               />
-              <button
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
                 type="button"
-                className="absolute right-2 top-2 bottom-2 w-10 bg-cyan-500 hover:bg-cyan-400 rounded-lg flex items-center justify-center text-black transition-all hover:scale-105"
+                className="absolute right-2 top-2 bottom-2 w-10 bg-cyan-500 hover:bg-cyan-400 rounded-lg flex items-center justify-center text-black transition-all"
               >
                 <svg
                   className="w-5 h-5"
@@ -240,32 +548,63 @@ const Footer = () => {
                     d="M14 5l7 7m0 0l-7 7m7-7H3"
                   />
                 </svg>
-              </button>
-            </div>
-          </div>
+              </motion.button>
+            </motion.div>
+          </motion.div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-slate-500 text-sm">
+        {/* Bottom Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
+        >
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.8 }}
+            className="text-slate-500 text-sm"
+          >
             © 2025 BikeRental Nepal. All rights reserved.
-          </p>
+          </motion.p>
           <div className="flex gap-6 text-sm text-slate-500">
-            <a
+            <motion.a
               href="/"
-              className="hover:text-cyan-400 transition-colors hover:-translate-y-0.5 inline-block"
+              whileHover={{ 
+                scale: 1.1,
+                y: -2,
+                color: "#22d3ee"
+              }}
+              transition={{ duration: 0.2 }}
+              className="hover:text-cyan-400 transition-colors inline-block"
             >
               Privacy Policy
-            </a>
-            <a
+            </motion.a>
+            <motion.a
               href="/"
-              className="hover:text-cyan-400 transition-colors hover:-translate-y-0.5 inline-block"
+              whileHover={{ 
+                scale: 1.1,
+                y: -2,
+                color: "#22d3ee"
+              }}
+              transition={{ duration: 0.2 }}
+              className="hover:text-cyan-400 transition-colors inline-block"
             >
               Terms of Service
-            </a>
+            </motion.a>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </footer>
+
+      {/* Decorative floating line */}
+      <motion.div
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 0.1 }}
+        transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"
+      />
+    </motion.footer>
   );
 };
 
