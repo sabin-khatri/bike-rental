@@ -603,6 +603,7 @@ function Navbar() {
                         }}
                       />
 
+
                       <motion.div
                         className="absolute inset-0 blur-xl opacity-50"
                         animate={{
