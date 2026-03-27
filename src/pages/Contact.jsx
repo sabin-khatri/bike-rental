@@ -29,10 +29,7 @@ const scaleIn = {
   },
 };
 
-const slideInLeft = {
-  hidden: { opacity: 0, x: -80 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.7 } },
-};
+
 
 // Icons (Improved with better stroke and size)
 const IconPhone = () => (
