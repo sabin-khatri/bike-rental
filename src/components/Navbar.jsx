@@ -1,639 +1,519 @@
-/* eslint-disable react-hooks/purity */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-// eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [bikeTransition, setBikeTransition] = useState(false);
-  const location = useLocation();
+const navLinks = [
+  { name: "Home", path: "/", icon: "⌂" },
+  { name: "Bikes", path: "/bikes", icon: "◈" },
+  { name: "About", path: "/about", icon: "◉" },
+  { name: "Contact", path: "/contact", icon: "◎" },
+];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+/* ── Page-transition overlay ── */
+function RideTransition({ active }) {
+  return (
+    <AnimatePresence>
+      {active && (
+        <motion.div
+          className="fixed inset-0 z-[999] pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          {/* sweeping line */}
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, #6C3AEB 40%, #00D4FF 60%, transparent)",
+            }}
+            initial={{ scaleX: 0, originX: 0 }}
+            animate={{ scaleX: 1 }}
+            exit={{ scaleX: 0, originX: 1 }}
+            transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+          />
 
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
-  }, [mobileMenuOpen]);
+          {/* bike emoji */}
+          <motion.span
+            className="absolute top-1/2 -translate-y-1/2 text-5xl select-none"
+            style={{ filter: "drop-shadow(0 0 12px rgba(108,58,235,0.8))" }}
+            initial={{ x: "-8vw", opacity: 0 }}
+            animate={{ x: "108vw", opacity: [0, 1, 1, 0] }}
+            transition={{
+              duration: 1.1,
+              ease: [0.43, 0.13, 0.23, 0.96],
+              opacity: { times: [0, 0.08, 0.85, 1] },
+            }}
+          >
+            🏍️
+          </motion.span>
 
-  const handleNavClick = (path) => {
-    if (path !== location.pathname) {
-      setBikeTransition(true);
-      setTimeout(() => setBikeTransition(false), 1200);
-    }
-  };
+          {/* speed streaks */}
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-px rounded-full"
+              style={{
+                top: `calc(50% + ${(i - 2.5) * 20}px)`,
+                left: 0,
+                width: `${80 + i * 30}px`,
+                background: i % 2 ? "#6C3AEB88" : "#00D4FF88",
+              }}
+              initial={{ scaleX: 0, originX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: [0, 0.8, 0] }}
+              transition={{ duration: 0.7, delay: i * 0.05, ease: "easeOut" }}
+            />
+          ))}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
-  const isHome = location.pathname === "/";
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Bikes", path: "/bikes" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
-  ];
-
-  const menuVariants = {
-    closed: {
-      opacity: 0,
-      x: "100%",
-      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-    },
-    open: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.4,
-        ease: [0.4, 0, 0.2, 1],
-        staggerChildren: 0.08,
-        delayChildren: 0.15,
-      },
-    },
-  };
-
-  const linkVariants = {
-    closed: { opacity: 0, x: 50, scale: 0.9 },
-    open: {
+/* ── Mobile drawer ── */
+function MobileDrawer({ open, onClose, currentPath, onNavClick }) {
+  const itemVariants = {
+    closed: { opacity: 0, x: 32, scale: 0.95 },
+    open: (i) => ({
       opacity: 1,
       x: 0,
       scale: 1,
-      transition: { type: "spring", stiffness: 300, damping: 24 },
-    },
+      transition: { type: "spring", stiffness: 320, damping: 26, delay: i * 0.07 },
+    }),
   };
 
-  const navBackground =
-    isHome && !scrolled && !mobileMenuOpen
-      ? "bg-transparent"
-      : "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100";
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* backdrop */}
+          <motion.div
+            className="fixed inset-0 z-40 lg:hidden"
+            style={{ background: "rgba(13,13,26,0.55)", backdropFilter: "blur(6px)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
 
-  const textColor =
-    isHome && !scrolled && !mobileMenuOpen ? "text-white" : "text-gray-900";
+          {/* panel */}
+          <motion.div
+            className="fixed top-0 right-0 bottom-0 z-50 lg:hidden w-full sm:w-[340px] flex flex-col"
+            style={{
+              background:
+                "linear-gradient(160deg, #ffffff 0%, #f6f3ff 50%, #f0faff 100%)",
+              boxShadow: "-8px 0 40px rgba(108,58,235,0.15)",
+            }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 38 }}
+          >
+            {/* close button */}
+            <motion.button
+              className="absolute top-5 right-5 w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(108,58,235,0.08)" }}
+              whileHover={{ scale: 1.1, background: "rgba(108,58,235,0.15)" }}
+              whileTap={{ scale: 0.92 }}
+              onClick={onClose}
+              aria-label="Close menu"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 1l12 12M13 1L1 13" stroke="#6C3AEB" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </motion.button>
+
+            {/* brand */}
+            <div className="pt-16 pb-8 px-8">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #6C3AEB, #00D4FF)",
+                    fontFamily: "'Clash Display', sans-serif",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  BR
+                </div>
+                <span
+                  className="text-xl font-bold"
+                  style={{ color: "#0D0D1A", fontFamily: "'Clash Display', sans-serif" }}
+                >
+                  BikeRental<span style={{ color: "#00D4FF" }}>.</span>
+                </span>
+              </div>
+              <p className="mt-3 text-sm" style={{ color: "#6B6B80" }}>
+                Ride beyond boundaries 🏍️
+              </p>
+            </div>
+
+            {/* links */}
+            <nav className="flex-1 px-6 space-y-1">
+              {navLinks.map((item, i) => {
+                const isActive = currentPath === item.path;
+                return (
+                  <motion.div key={item.name} custom={i} variants={itemVariants} initial="closed" animate="open" exit="closed">
+                    <Link
+                      to={item.path}
+                      onClick={() => { onNavClick(item.path); onClose(); }}
+                      className="relative flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 group overflow-hidden"
+                      style={{
+                        background: isActive
+                          ? "linear-gradient(135deg, #6C3AEB, #4B28B5)"
+                          : "transparent",
+                        color: isActive ? "white" : "#0D0D1A",
+                      }}
+                    >
+                      {!isActive && (
+                        <motion.div
+                          className="absolute inset-0 rounded-2xl"
+                          style={{ background: "rgba(108,58,235,0.06)" }}
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 1 }}
+                        />
+                      )}
+                      <span
+                        className="relative font-semibold text-base"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        {item.name}
+                      </span>
+                      {isActive && (
+                        <motion.span
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.2, repeat: Infinity }}
+                          className="text-sm"
+                        >
+                          →
+                        </motion.span>
+                      )}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </nav>
+
+            {/* CTA */}
+            <motion.div
+              className="p-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <Link to="/bikes" onClick={() => { onNavClick("/bikes"); onClose(); }}>
+                <motion.button
+                  className="relative w-full py-4 rounded-2xl font-bold text-base text-white overflow-hidden"
+                  style={{
+                    background: "linear-gradient(135deg, #6C3AEB 0%, #4B28B5 50%, #00D4FF 100%)",
+                    backgroundSize: "200% auto",
+                    fontFamily: "'DM Sans', sans-serif",
+                    boxShadow: "0 8px 24px rgba(108,58,235,0.35)",
+                  }}
+                  whileHover={{ scale: 1.02, boxShadow: "0 12px 32px rgba(108,58,235,0.45)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {/* shimmer */}
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                    }}
+                    animate={{ x: ["-100%", "100%"] }}
+                    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 0.5 }}
+                  />
+                  <span className="relative flex items-center justify-center gap-2">
+                    Start Booking
+                    <motion.span animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                      →
+                    </motion.span>
+                  </span>
+                </motion.button>
+              </Link>
+            </motion.div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ── Main Navbar ── */
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [rideTransition, setRideTransition] = useState(false);
+  const location = useLocation();
+
+  const isHome = location.pathname === "/";
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  const handleNavClick = (path) => {
+    if (path !== location.pathname) {
+      setRideTransition(true);
+      setTimeout(() => setRideTransition(false), 1300);
+    }
+  };
+
+  /* nav appearance states */
+  const transparent = isHome && !scrolled && !mobileOpen;
+
+  const navBg = transparent
+    ? "bg-transparent"
+    : "bg-white/97 backdrop-blur-xl border-b border-purple-100/60";
+
+  const navShadow = transparent ? "" : "shadow-[0_4px_24px_rgba(108,58,235,0.08)]";
 
   return (
     <>
+      <RideTransition active={rideTransition} />
+      <MobileDrawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        currentPath={location.pathname}
+        onNavClick={handleNavClick}
+      />
+
       <motion.nav
-        initial={{ y: -100, opacity: 0 }}
+        initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBackground}`}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 left-0 right-0 z-[200] transition-all duration-300 ${navBg} ${navShadow}`}
+        style={{ height: "72px" }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 lg:h-20">
-            <Link
-              to="/"
-              className="flex items-center gap-2 lg:gap-3 z-50 group"
-              onClick={() => handleNavClick("/")}
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 h-full flex items-center justify-between">
+
+          {/* ── Logo ── */}
+          <Link
+            to="/"
+            className="flex items-center gap-3 group"
+            onClick={() => handleNavClick("/")}
+          >
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: [-3, 3, -3, 0] }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm overflow-hidden"
+              style={{
+                background: transparent
+                  ? "rgba(255,255,255,0.12)"
+                  : "linear-gradient(135deg, #6C3AEB, #00D4FF)",
+                border: transparent
+                  ? "1.5px solid rgba(255,255,255,0.25)"
+                  : "none",
+                fontFamily: "'Clash Display', sans-serif",
+                letterSpacing: "0.5px",
+                boxShadow: transparent ? "none" : "0 4px 16px rgba(108,58,235,0.3)",
+              }}
             >
+              BR
+              {/* glow ring on hover */}
               <motion.div
-                whileHover={{
-                  scale: 1.15,
-                  rotate: [0, -10, 10, -10, 0],
-                  transition: { duration: 0.6 },
-                }}
-                whileTap={{ scale: 0.9 }}
-                className={`relative w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center font-black text-lg lg:text-xl shadow-lg transition-all duration-300 overflow-hidden ${
-                  isHome && !scrolled && !mobileMenuOpen
-                    ? "bg-white/10 backdrop-blur-sm text-white border-2 border-white/30"
-                    : "bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 text-white"
-                }`}
-              >
-                <span className="drop-shadow-lg relative z-10">BR</span>
+                className="absolute inset-0 rounded-xl"
+                style={{ background: "radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%)" }}
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+              />
+            </motion.div>
 
-                <motion.div
-                  className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-400 to-blue-500 opacity-0 blur-md"
-                  whileHover={{ opacity: 0.8, scale: 1.4 }}
-                  transition={{ duration: 0.3 }}
-                />
-
-                <motion.div
-                  className="absolute inset-0 rounded-xl border-2 border-cyan-400/60"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  style={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                />
-
-                <motion.div
-                  className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0, 0.3, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                />
-              </motion.div>
-
-              <motion.span
-                whileHover={{ x: 3 }}
-                className={`text-xl lg:text-2xl font-bold tracking-tight ${textColor} transition-colors duration-300`}
-              >
-                BikeRental
-                <motion.span
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    rotate: [0, 180, 360],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 3,
-                  }}
-                  className="inline-block text-cyan-500"
-                >
-                  .
-                </motion.span>
-              </motion.span>
-            </Link>
-
-            <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    onClick={() => handleNavClick(item.path)}
-                  >
-                    <motion.div
-                      whileHover={{ y: -4, scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 17,
-                      }}
-                      className="relative px-5 py-2.5 group"
-                    >
-                      <span
-                        className={`relative font-semibold text-sm transition-colors duration-200 ${
-                          isActive
-                            ? "text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500"
-                            : isHome && !scrolled
-                            ? "text-white/90 group-hover:text-white"
-                            : "text-gray-700 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-500 group-hover:to-cyan-500"
-                        }`}
-                      >
-                        {item.name}
-
-                        <motion.span
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                          initial={{ x: "-100%", opacity: 0 }}
-                          whileHover={{ x: "100%", opacity: 1 }}
-                          transition={{ duration: 0.5 }}
-                        />
-                      </span>
-
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
-                        <motion.span
-                          className={`block h-0.5 bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-full transition-all duration-300 ${
-                            isActive ? "w-12" : "w-0 group-hover:w-12"
-                          }`}
-                        />
-                        {isActive && (
-                          <>
-                            <motion.span
-                              animate={{
-                                scale: [1, 1.5, 1],
-                                opacity: [0.5, 0, 0.5],
-                              }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                              className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-full blur-md"
-                            />
-                            <motion.span
-                              animate={{
-                                scaleX: [0, 1, 0],
-                              }}
-                              transition={{ duration: 1.5, repeat: Infinity }}
-                              className="absolute inset-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent rounded-full"
-                            />
-                          </>
-                        )}
-                      </div>
-
-                      <motion.div
-                        className={`absolute inset-0 rounded-lg ${
-                          isHome && !scrolled
-                            ? "bg-white/10"
-                            : "bg-gradient-to-r from-purple-50 to-cyan-50"
-                        }`}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileHover={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ zIndex: -1 }}
-                      />
-                    </motion.div>
-                  </Link>
-                );
-              })}
-            </div>
-
-            <Link
-              to="/bikes"
-              className="hidden lg:block"
-              onClick={() => handleNavClick("/bikes")}
+            <motion.span
+              whileHover={{ x: 2 }}
+              className="text-xl font-bold tracking-tight transition-colors duration-300"
+              style={{
+                color: transparent ? "white" : "#0D0D1A",
+                fontFamily: "'Clash Display', sans-serif",
+              }}
             >
-              <motion.button
-                whileHover={{
-                  scale: 1.1,
-                  y: -4,
-                  boxShadow: "0 20px 50px rgba(139, 92, 246, 0.4)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className={`relative px-8 py-3 rounded-full font-bold text-sm overflow-hidden transition-all duration-300 ${
-                  isHome && !scrolled
-                    ? "bg-white text-purple-600 shadow-lg hover:shadow-xl"
-                    : "bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white shadow-md"
-                }`}
+              BikeRental
+              <motion.span
+                animate={{ scale: [1, 1.4, 1], rotate: [0, 180, 360] }}
+                transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }}
+                className="inline-block"
+                style={{ color: "#00D4FF" }}
               >
-                <span className="relative z-10 flex items-center gap-2">
+                .
+              </motion.span>
+            </motion.span>
+          </Link>
+
+          {/* ── Desktop links ── */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link key={item.name} to={item.path} onClick={() => handleNavClick(item.path)}>
+                  <motion.div
+                    className="relative px-4 py-2.5 rounded-xl cursor-pointer group"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 20 }}
+                  >
+                    {/* hover bg */}
+                    <motion.div
+                      className="absolute inset-0 rounded-xl"
+                      style={{
+                        background: transparent
+                          ? "rgba(255,255,255,0.1)"
+                          : "rgba(108,58,235,0.06)",
+                      }}
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    />
+
+                    <span
+                      className="relative text-sm font-semibold transition-all duration-200"
+                      style={{
+                        color: isActive
+                          ? transparent
+                            ? "white"
+                            : "#6C3AEB"
+                          : transparent
+                          ? "rgba(255,255,255,0.75)"
+                          : "#6B6B80",
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      {item.name}
+                    </span>
+
+                    {/* active indicator */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 rounded-full"
+                        style={{
+                          width: "20px",
+                          background: "linear-gradient(90deg, #6C3AEB, #00D4FF)",
+                        }}
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* ── Desktop CTA ── */}
+          <div className="hidden lg:block">
+            <Link to="/bikes" onClick={() => handleNavClick("/bikes")}>
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2, boxShadow: "0 12px 32px rgba(108,58,235,0.4)" }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                className="relative px-7 py-2.5 rounded-full font-semibold text-sm overflow-hidden"
+                style={{
+                  background: transparent
+                    ? "white"
+                    : "linear-gradient(135deg, #6C3AEB, #4B28B5)",
+                  color: transparent ? "#6C3AEB" : "white",
+                  boxShadow: transparent
+                    ? "0 4px 16px rgba(0,0,0,0.15)"
+                    : "0 4px 20px rgba(108,58,235,0.3)",
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                {/* shimmer */}
+                <motion.div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)",
+                  }}
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 1 }}
+                />
+                <span className="relative flex items-center gap-2">
                   Book Now
                   <motion.span
-                    animate={{ x: [0, 5, 0] }}
+                    animate={{ x: [0, 4, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
                     →
                   </motion.span>
                 </span>
-
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-600 to-blue-600 opacity-0"
-                  initial={{ x: "-100%" }}
-                  whileHover={{
-                    x: "100%",
-                    opacity: isHome && !scrolled ? 0 : 0.8,
-                  }}
-                  transition={{ duration: 0.6 }}
-                />
-
-                <motion.div
-                  className="absolute inset-0 rounded-full opacity-0 blur-xl"
-                  whileHover={{ opacity: 0.7 }}
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                  }}
-                />
-
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-1 h-1 bg-white rounded-full"
-                    initial={{ x: "50%", y: "50%", opacity: 0 }}
-                    whileHover={{
-                      x: `${50 + (i - 2) * 35}%`,
-                      y: `${50 + (i % 2 ? -25 : 25)}%`,
-                      opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      repeat: Infinity,
-                      delay: i * 0.15,
-                    }}
-                  />
-                ))}
               </motion.button>
             </Link>
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`lg:hidden z-50 p-2 rounded-lg transition-all duration-300 ${
-                isHome && !scrolled && !mobileMenuOpen
-                  ? "hover:bg-white/10 text-white"
-                  : "hover:bg-gradient-to-r hover:from-purple-50 hover:to-cyan-50 text-gray-900"
-              }`}
-              aria-label="Toggle menu"
-            >
-              <div className="w-6 h-5 flex flex-col justify-between">
-                <motion.span
-                  animate={
-                    mobileMenuOpen ? { rotate: 45, y: 10 } : { rotate: 0, y: 0 }
-                  }
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-0.5 bg-current rounded-full"
-                />
-                <motion.span
-                  animate={
-                    mobileMenuOpen
-                      ? { opacity: 0, x: -10 }
-                      : { opacity: 1, x: 0 }
-                  }
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-0.5 bg-current rounded-full"
-                />
-                <motion.span
-                  animate={
-                    mobileMenuOpen
-                      ? { rotate: -45, y: -10 }
-                      : { rotate: 0, y: 0 }
-                  }
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-0.5 bg-current rounded-full"
-                />
-              </div>
-            </motion.button>
           </div>
-        </div>
-      </motion.nav>
 
-      <AnimatePresence>
-        {bikeTransition && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[60] pointer-events-none overflow-hidden"
+          {/* ── Mobile hamburger ── */}
+          <motion.button
+            className="lg:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-[5px] rounded-xl"
+            style={{
+              background: transparent ? "rgba(255,255,255,0.1)" : "rgba(108,58,235,0.06)",
+            }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Open menu"
           >
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              exit={{ scaleX: 0 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent origin-left"
-              style={{ transform: "translateY(-50%)" }}
-            />
-
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              exit={{ scaleX: 0 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: "easeInOut" }}
-              className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent origin-left"
-              style={{ transform: "translateY(-50%) translateY(5px)" }}
-            />
-
-            <motion.div
-              initial={{ x: "-10%", opacity: 0 }}
-              animate={{
-                x: "110%",
-                opacity: [0, 1, 1, 0],
-              }}
-              transition={{
-                duration: 1.2,
-                ease: [0.43, 0.13, 0.23, 0.96],
-                opacity: {
-                  times: [0, 0.1, 0.8, 1],
-                  duration: 1.2,
-                },
-              }}
-              className="absolute top-1/2 -translate-y-1/2 text-5xl drop-shadow-2xl"
-              style={{
-                filter: "drop-shadow(0 0 10px rgba(139, 92, 246, 0.8))",
-              }}
-            >
-              🏍️
-            </motion.div>
-
-            {[...Array(7)].map((_, i) => (
-              <motion.div
+            {[0, 1, 2].map((i) => (
+              <motion.span
                 key={i}
-                initial={{ x: "0%", opacity: 0, scaleX: 0 }}
-                animate={{
-                  x: "100%",
-                  opacity: [0, 0.7, 0],
-                  scaleX: [0, 1, 0.5, 0],
-                }}
-                transition={{
-                  duration: 0.8,
-                  delay: i * 0.06,
-                  ease: "easeOut",
-                }}
-                className={`absolute h-0.5 rounded-full ${
-                  i % 2 === 0 ? "bg-purple-400/60" : "bg-cyan-400/60"
-                }`}
+                className="block h-[2px] rounded-full"
                 style={{
-                  top: `calc(50% + ${(i - 3) * 18}px)`,
-                  left: 0,
-                  width: `${120 + i * 25}px`,
+                  background: transparent ? "white" : "#0D0D1A",
+                  width: i === 1 ? "14px" : "20px",
+                  transformOrigin: "center",
                 }}
+                animate={
+                  mobileOpen
+                    ? i === 0
+                      ? { rotate: 45, y: 7, width: "20px" }
+                      : i === 1
+                      ? { opacity: 0, x: -8 }
+                      : { rotate: -45, y: -7, width: "20px" }
+                    : { rotate: 0, y: 0, opacity: 1, x: 0 }
+                }
+                transition={{ duration: 0.28 }}
               />
             ))}
+          </motion.button>
+        </div>
 
-            {[...Array(12)].map((_, i) => (
-              <motion.div
-                key={`particle-${i}`}
-                initial={{
-                  x: "20%",
-                  y: "50%",
-                  scale: 0,
-                  opacity: 0,
-                }}
-                animate={{
-                  x: "80%",
-                  y: `${50 + (Math.random() - 0.5) * 50}%`,
-                  scale: [0, 1.5, 0],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 1.2,
-                  delay: i * 0.08,
-                  ease: "easeOut",
-                }}
-                className={`absolute w-2 h-2 rounded-full blur-sm ${
-                  i % 3 === 0
-                    ? "bg-purple-400"
-                    : i % 3 === 1
-                    ? "bg-cyan-400"
-                    : "bg-blue-400"
-                }`}
-              />
-            ))}
-
-            <motion.div
-              initial={{ x: "-20%", opacity: 0 }}
-              animate={{
-                x: "120%",
-                opacity: [0, 0.7, 0],
-              }}
-              transition={{
-                duration: 1.2,
-                ease: "easeInOut",
-              }}
-              className="absolute top-1/2 -translate-y-1/2 w-80 h-40 bg-gradient-to-r from-purple-500/30 via-cyan-500/30 to-blue-500/30 rounded-full blur-3xl"
-            />
-
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={`ring-${i}`}
-                initial={{ x: "50%", scale: 0, opacity: 0 }}
-                animate={{
-                  x: "50%",
-                  scale: [0, 2, 4],
-                  opacity: [0, 0.6, 0],
-                }}
-                transition={{
-                  duration: 1,
-                  delay: i * 0.3,
-                  ease: "easeOut",
-                }}
-                className="absolute top-1/2 -translate-y-1/2 w-32 h-32 border-2 border-purple-400/50 rounded-full"
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 bg-gradient-to-br from-purple-900/20 via-black/40 to-cyan-900/20 backdrop-blur-sm z-40 lg:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-
-            <motion.div
-              initial="closed"
-              animate="open"
-              exit="closed"
-              variants={menuVariants}
-              className="fixed top-0 right-0 bottom-0 w-full sm:w-80 bg-gradient-to-br from-white via-purple-50/30 to-cyan-50/30 shadow-2xl z-40 lg:hidden overflow-y-auto"
-            >
-              <div className="flex flex-col h-full pt-24 pb-8 px-6">
-                <div className="flex flex-col gap-2">
-                  {navLinks.map((item, index) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <motion.div
-                        key={item.name}
-                        variants={linkVariants}
-                        whileHover={{ x: 8, scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Link
-                          to={item.path}
-                          onClick={() => {
-                            handleNavClick(item.path);
-                            setMobileMenuOpen(false);
-                          }}
-                          className={`relative block px-5 py-4 rounded-xl font-semibold text-lg transition-all duration-300 overflow-hidden ${
-                            isActive
-                              ? "bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 text-white shadow-lg shadow-purple-500/30"
-                              : "text-gray-700 hover:bg-white hover:shadow-md"
-                          }`}
-                        >
-                          <span className="relative z-10 flex items-center justify-between">
-                            {item.name}
-                            {isActive && (
-                              <motion.span
-                                animate={{ x: [0, 5, 0] }}
-                                transition={{ duration: 1, repeat: Infinity }}
-                              >
-                                →
-                              </motion.span>
-                            )}
-                          </span>
-
-                          {!isActive && (
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-100 to-transparent"
-                              initial={{ x: "-100%" }}
-                              whileHover={{ x: "100%" }}
-                              transition={{ duration: 0.5 }}
-                            />
-                          )}
-
-                          {isActive && (
-                            <>
-                              <motion.div
-                                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"
-                                initial={{ scaleY: 0 }}
-                                animate={{ scaleY: 1 }}
-                                transition={{ delay: index * 0.1 + 0.3 }}
-                              />
-                              <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-cyan-400/20 rounded-xl"
-                                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                              />
-                            </>
-                          )}
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                <motion.div
-                  variants={linkVariants}
-                  className="mt-auto space-y-4"
-                >
-                  <Link
-                    to="/bikes"
-                    onClick={() => {
-                      handleNavClick("/bikes");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.03 }}
-                      className="relative w-full px-8 py-4 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white text-lg font-bold rounded-xl shadow-lg overflow-hidden"
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        Start Booking
-                        <motion.span
-                          animate={{ x: [0, 5, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          →
-                        </motion.span>
-                      </span>
-
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                        animate={{ x: ["-100%", "100%"] }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          repeatDelay: 1,
-                        }}
-                      />
-
-
-                      <motion.div
-                        className="absolute inset-0 blur-xl opacity-50"
-                        animate={{
-                          background: [
-                            "radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                            "radial-gradient(circle, rgba(6, 182, 212, 0.8) 0%, transparent 70%)",
-                            "radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                          ],
-                        }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                      />
-                    </motion.button>
-                  </Link>
-
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="text-center text-sm bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent font-semibold"
-                  >
-                    Ride Beyond Boundaries 🏍️
-                  </motion.p>
-                </motion.div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        {/* ── Progress bar (scroll indicator) ── */}
+        <ScrollProgress />
+      </motion.nav>
     </>
   );
 }
 
-export default Navbar;
+/* ── Scroll progress thin bar at bottom of nav ── */
+function ScrollProgress() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      const el = document.documentElement;
+      const scrolled = el.scrollTop;
+      const total = el.scrollHeight - el.clientHeight;
+      setProgress(total > 0 ? scrolled / total : 0);
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+
+  return (
+    <div className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden">
+      <motion.div
+        className="h-full origin-left"
+        style={{
+          scaleX: progress,
+          background: "linear-gradient(90deg, #6C3AEB, #00D4FF)",
+        }}
+      />
+    </div>
+  );
+}
