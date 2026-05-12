@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mmamc_2/my_college.dart';
+import 'package:mmamc_2/screens/login_screen.dart';
+import 'package:mmamc_2/screens/signup_screen.dart';
 import 'package:mmamc_2/test_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -10,7 +12,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-final List pages = [MyCollege(), TestScreen(), TestScreen()];
+final List pages = [MyCollege(), TestScreen(), LoginScreen()];
 int currentIndex = 0;
 
 
