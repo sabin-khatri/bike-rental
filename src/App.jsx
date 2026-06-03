@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Bikes from "./pages/Bikes";
+import Dashboard from "./pages/Dashboard";
 
 
 function ScrollToTop() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/bikes" element={<Bikes />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/dashboard" element={<Dashboard />} />
        
       </Routes>
       <Footer />
