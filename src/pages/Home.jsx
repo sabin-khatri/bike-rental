@@ -1,22 +1,24 @@
 /* eslint-disable no-unused-vars */
 import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
+
+import { useApp } from "../context/AppContext";
 import { bikes } from "../data/bikes";
 
-/* ─── Data ─── */
-const FEATURES = [
-  { title: "Fully Insured", desc: "Every rental includes comprehensive insurance – ride worry-free.", icon: "shield", accent: "from-cyan-500/15 to-blue-500/15", border: "border-cyan-200", iconBg: "bg-cyan-50", iconColor: "text-cyan-600" },
-  { title: "24/7 Support", desc: "Mechanical help anytime, anywhere in Nepal. One call away.", icon: "clock", accent: "from-violet-500/15 to-purple-500/15", border: "border-violet-200", iconBg: "bg-violet-50", iconColor: "text-violet-600" },
-  { title: "Latest Models", desc: "2023–2025 fleet, meticulously serviced after every ride.", icon: "zap", accent: "from-amber-500/15 to-orange-500/15", border: "border-amber-200", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-  { title: "Free Delivery", desc: "Delivered to your hotel in Biratnagar and Belbari – free.", icon: "map", accent: "from-emerald-500/15 to-teal-500/15", border: "border-emerald-200", iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
+/* ─── Static Mappings ─── */
+const FEATURE_KEYS = [
+  { titleKey: "insuredTitle", descKey: "insuredDesc", icon: "shield", accent: "from-cyan-500/10 to-blue-500/10 dark:from-cyan-500/5 dark:to-blue-500/5", border: "border-cyan-200/50 dark:border-cyan-900/30", iconBg: "bg-cyan-50 dark:bg-cyan-950/30", iconColor: "text-cyan-600 dark:text-cyan-400" },
+  { titleKey: "supportTitle", descKey: "supportDesc", icon: "clock", accent: "from-purple-500/10 to-indigo-500/10 dark:from-purple-500/5 dark:to-indigo-500/5", border: "border-purple-200/50 dark:border-purple-900/30", iconBg: "bg-purple-50 dark:bg-purple-950/30", iconColor: "text-purple-600 dark:text-purple-400" },
+  { titleKey: "modelsTitle", descKey: "modelsDesc", icon: "zap", accent: "from-amber-500/10 to-orange-500/10 dark:from-amber-500/5 dark:to-orange-500/5", border: "border-amber-200/50 dark:border-amber-900/30", iconBg: "bg-amber-50 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400" },
+  { titleKey: "deliveryTitle", descKey: "deliveryDesc", icon: "map", accent: "from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/5 dark:to-teal-500/5", border: "border-emerald-200/50 dark:border-emerald-900/30", iconBg: "bg-emerald-50 dark:bg-emerald-950/30", iconColor: "text-emerald-600 dark:text-emerald-400" },
 ];
 
-const STATS = [
-  { num: 500, suffix: "+", label: "Happy Riders" },
-  { num: 50, suffix: "+", label: "Premium Bikes" },
-  { num: 100, suffix: "%", label: "Insurance Cover" },
-  { num: 24, suffix: "/7", label: "Road Support" },
+const STATS_KEYS = [
+  { num: 500, suffix: "+", labelKey: "happyRiders" },
+  { num: 50, suffix: "+", labelKey: "premiumBikes" },
+  { num: 100, suffix: "%", labelKey: "insuranceCover" },
+  { num: 24, suffix: "/7", labelKey: "roadSupport" },
 ];
 
 const TESTIMONIALS = [
@@ -66,22 +68,18 @@ const getIcon = (key) => ({ shield: <IconShield />, clock: <IconClock />, zap: <
 
 /* ─── Animation Variants ─── */
 const fadeUp = {
-  hidden: { opacity: 0, y: 50 },
-  visible: (d = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.8, delay: d, ease: [0.22, 1, 0.36, 1] } }),
+  hidden: { opacity: 0, y: 30 },
+  visible: (d = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.7, delay: d, ease: [0.22, 1, 0.36, 1] } }),
 };
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-};
-const popIn = {
-  hidden: { opacity: 0, scale: 0.88 },
-  visible: (d = 0) => ({ opacity: 1, scale: 1, transition: { duration: 0.65, delay: d, ease: [0.34, 1.3, 0.64, 1] } }),
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
 };
 
 /* ─── Reveal Wrapper ─── */
 function Reveal({ children, variants = fadeUp, delay = 0, className = "" }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const inView = useInView(ref, { once: true, margin: "-50px" });
   return (
     <motion.div ref={ref} variants={variants} custom={delay}
       initial="hidden" animate={inView ? "visible" : "hidden"} className={className}>
@@ -98,7 +96,7 @@ function Counter({ end, suffix = "" }) {
   useEffect(() => {
     if (!inView) return;
     let cur = 0;
-    const step = end / (1600 / 16);
+    const step = end / (1000 / 16);
     const t = setInterval(() => {
       cur += step;
       if (cur >= end) { setCount(end); clearInterval(t); }
@@ -111,17 +109,26 @@ function Counter({ end, suffix = "" }) {
 
 /* ─── Marquee ─── */
 function Marquee() {
-  const items = ["Nepal's #1 Rental", "Premium Fleet", "Free Delivery", "Fully Insured", "24/7 Support", "GPS Tracking", "Instant Booking", "Expert Guidance"];
+  const { t } = useApp();
+  const items = [
+    t("whyModernRiders"),
+    t("insuredTitle"),
+    t("supportTitle"),
+    t("modelsTitle"),
+    t("deliveryTitle"),
+    t("happyRiders"),
+    t("premiumBikes")
+  ];
   return (
-    <div className="bg-cyan-600 py-3 overflow-hidden select-none">
+    <div className="bg-purple-600 dark:bg-purple-800 py-3.5 overflow-hidden select-none transition-colors duration-300">
       <motion.div
         animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
         className="flex whitespace-nowrap"
       >
         {[...items, ...items].map((item, i) => (
-          <span key={i} className="inline-flex items-center gap-3 px-6 text-white/90 text-xs font-bold tracking-[3px] uppercase">
-            {item} <span className="text-cyan-300 text-[8px]">◆</span>
+          <span key={i} className="inline-flex items-center gap-3 px-6 text-white/90 text-xs font-black tracking-[3px] uppercase">
+            {item} <span className="text-purple-300 text-[8px]">◆</span>
           </span>
         ))}
       </motion.div>
@@ -131,6 +138,7 @@ function Marquee() {
 
 /* ─── Parallax Hero ─── */
 function Hero() {
+  const { t, theme } = useApp();
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
@@ -146,22 +154,18 @@ function Hero() {
           alt="Rider in Nepal Himalayas"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-slate-950/85" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_45%_30%,rgba(6,182,212,0.18),transparent_65%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/60 to-slate-950/90 dark:to-slate-990/95" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_45%_30%,rgba(139,92,246,0.18),transparent_65%)]" />
       </motion.div>
-
-      {/* Grain */}
-      <div className="absolute inset-0 z-[1] opacity-[0.035] pointer-events-none"
-        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }} />
 
       {/* Floating orbs */}
       {[
-        { w: 320, top: "12%", left: "5%", color: "rgba(6,182,212,0.12)", d: 9 },
-        { w: 220, top: "55%", right: "8%", color: "rgba(139,92,246,0.1)", d: 12 },
-        { w: 160, top: "35%", left: "72%", color: "rgba(34,211,238,0.08)", d: 7 },
+        { w: 320, top: "12%", left: "5%", color: "rgba(108,58,235,0.1)", d: 9 },
+        { w: 220, top: "55%", right: "8%", color: "rgba(139,92,246,0.08)", d: 12 },
+        { w: 160, top: "35%", left: "72%", color: "rgba(168,85,247,0.06)", d: 7 },
       ].map((o, i) => (
         <motion.div key={i}
-          animate={{ y: [0, -28, 0], scale: [1, 1.07, 1] }}
+          animate={{ y: [0, -20, 0], scale: [1, 1.05, 1] }}
           transition={{ duration: o.d, repeat: Infinity, ease: "easeInOut", delay: i * 1.8 }}
           className="absolute rounded-full blur-3xl pointer-events-none z-[1]"
           style={{ width: o.w, height: o.w, top: o.top, left: o.left, right: o.right, background: o.color }}
@@ -171,80 +175,70 @@ function Hero() {
       <motion.div style={{ y: textY, opacity }} className="relative z-10 text-center px-5 max-w-5xl mx-auto text-white">
         {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-5 sm:px-7 py-2.5 mb-7 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-cyan-200 text-xs sm:text-sm font-bold tracking-[3px] uppercase"
+          className="inline-flex items-center gap-2 px-5 sm:px-7 py-2.5 mb-7 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-purple-200 text-xs sm:text-sm font-bold tracking-[3px] uppercase"
         >
-          <motion.span animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 2 }}>🏔️</motion.span>
-          Nepal on Two Wheels
+          <span>🏔️</span> Nepal on Two Wheels
         </motion.div>
 
-        {/* H1 */}
+        {/* Heading */}
         <motion.h1
-          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter mb-5"
+          initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter mb-6"
         >
-          Ride Beyond{" "}
+          {t("heroTitlePrefix")}{" "}
           <br className="hidden sm:block" />
-          <span className="relative inline-block">
-            <motion.span
-              className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-300 to-violet-400"
-              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-              style={{ backgroundSize: "300% 300%" }}
-            >
-              Boundaries
-            </motion.span>
-            <motion.span
-              initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-              transition={{ duration: 0.9, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-violet-500 rounded-full origin-left"
-            />
+          <span className="relative inline-block mt-2">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-pink-400">
+              {t("heroTitleSuffix")}
+            </span>
+            <span className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" />
           </span>
         </motion.h1>
 
         <motion.p
-          initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.5 }}
           className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto font-light mb-10 leading-relaxed"
         >
-          Premium bikes • Full insurance • 24/7 support • Delivered to your hotel in Biratnagar & Belbari
+          {t("heroSubtitle")}
         </motion.p>
 
-        {/* CTAs */}
+        {/* Buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.65 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <motion.div whileHover={{ scale: 1.04, boxShadow: "0 20px 50px rgba(6,182,212,0.4)" }} whileTap={{ scale: 0.97 }}>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link to="/bikes"
-              className="flex items-center justify-center gap-3 px-8 sm:px-11 py-4 sm:py-5 bg-cyan-500 hover:bg-cyan-400 text-black font-black text-base sm:text-lg rounded-full shadow-xl transition-all duration-300">
-              Find Your Bike
-              <motion.span animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+              className="flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-4.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-base rounded-full shadow-xl shadow-purple-900/30 transition-all duration-300">
+              {t("findBike")}
+              <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
                 <IconArrowRight />
               </motion.span>
             </Link>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link to="/contact"
-              className="flex items-center justify-center gap-2.5 px-8 sm:px-11 py-4 sm:py-5 border border-white/30 bg-white/10 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-full hover:bg-white/20 transition-all duration-300">
-              <IconPhone /> Contact Us
+              className="flex items-center justify-center gap-2.5 px-8 sm:px-10 py-4 sm:py-4.5 border border-white/20 bg-white/10 backdrop-blur-md text-white font-bold text-base rounded-full hover:bg-white/25 transition-all duration-300">
+              <IconPhone /> {t("contactUs")}
             </Link>
           </motion.div>
         </motion.div>
       </motion.div>
 
-      {/* Scroll cue */}
+      {/* Scroll indicator */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} transition={{ delay: 1.2 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
       >
-        <span className="text-white/40 text-[10px] tracking-[4px] uppercase">Scroll</span>
+        <span className="text-white/40 text-[9px] tracking-[4px] uppercase">{t("scroll")}</span>
         <motion.div
-          animate={{ y: [0, 12, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          className="w-px h-10 bg-gradient-to-b from-white/50 to-transparent"
+          animate={{ y: [0, 8, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent"
         />
       </motion.div>
     </section>
@@ -253,26 +247,21 @@ function Hero() {
 
 /* ─── Floating Stats Card ─── */
 function StatsCard() {
+  const { t } = useApp();
   return (
-    <div className="relative -mt-14 sm:-mt-20 z-20 px-5 sm:px-6">
+    <div className="relative -mt-16 sm:-mt-24 z-20 px-5 sm:px-6">
       <Reveal>
-        <div className="max-w-5xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-7 sm:p-10 md:p-14 border border-gray-100">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8 text-center">
-            {STATS.map((s, i) => (
-              <motion.div key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                whileHover={{ scale: 1.06 }}
-                className="group cursor-default"
-              >
-                <div className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-gray-800 to-cyan-700 group-hover:from-cyan-600 group-hover:to-blue-700 transition-all duration-500">
+        <div className="max-w-5xl mx-auto bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 sm:p-12 border border-gray-100 dark:border-slate-800 transition-colors duration-300">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            {STATS_KEYS.map((s, i) => (
+              <div key={i} className="group">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-black text-purple-600 dark:text-purple-400">
                   <Counter end={s.num} suffix={s.suffix} />
                 </div>
-                <p className="mt-2 text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest">{s.label}</p>
-                <div className="w-8 h-0.5 bg-cyan-500 mx-auto mt-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
+                <p className="mt-2 text-xs sm:text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                  {t(s.labelKey)}
+                </p>
+              </div>
             ))}
           </div>
         </div>
@@ -283,54 +272,44 @@ function StatsCard() {
 
 /* ─── Featured Bikes ─── */
 function FeaturedBike({ bike, index }) {
+  const { t } = useApp();
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 35 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.75, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -12, transition: { duration: 0.3 } }}
-      className="group relative h-72 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl cursor-pointer"
+      transition={{ duration: 0.7, delay: index * 0.15, ease: "easeOut" }}
+      whileHover={{ y: -8 }}
+      className="group relative h-80 rounded-3xl overflow-hidden shadow-lg cursor-pointer"
     >
       <img src={bike.image} alt={bike.name}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
+        className="w-full h-full object-cover transition-transform duration-75 group-hover:scale-105" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+      
       {/* Category badge */}
-      <motion.div
-        initial={{ x: -30, opacity: 0 }}
-        animate={inView ? { x: 0, opacity: 1 } : {}}
-        transition={{ delay: index * 0.15 + 0.3 }}
-        className="absolute top-4 left-4"
-      >
-        <span className="px-3 py-1.5 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-xs font-bold text-white uppercase tracking-wider">
+      <div className="absolute top-4 left-4">
+        <span className="px-3 py-1.5 bg-black/40 backdrop-blur-md border border-white/15 rounded-full text-[10px] font-black text-white uppercase tracking-wider">
           {bike.category}
         </span>
-      </motion.div>
+      </div>
 
-      {/* Content */}
-      <div className="absolute bottom-5 sm:bottom-7 left-5 sm:left-7 right-5 sm:right-7">
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white mb-2 group-hover:text-cyan-300 transition-colors duration-300">
+      {/* Info Content */}
+      <div className="absolute bottom-6 left-6 right-6">
+        <h3 className="text-xl sm:text-2xl font-black text-white mb-2 group-hover:text-purple-400 transition-colors duration-300">
           {bike.name}
         </h3>
         <div className="flex justify-between items-center">
           <div>
-            <span className="text-2xl sm:text-3xl font-black text-cyan-400">Rs {bike.price?.toLocaleString()}</span>
-            <span className="text-gray-400 text-sm ml-1">/day</span>
+            <span className="text-2xl font-black text-purple-400">Rs {bike.price?.toLocaleString()}</span>
+            <span className="text-gray-400 text-xs ml-1">/{t("day")}</span>
           </div>
-          <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            whileInView={{ opacity: 0 }}
-            className="group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0"
-          >
-            <Link to="/bikes"
-              className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-colors">
-              Book <IconArrowRight />
-            </Link>
-          </motion.div>
+          <Link to="/bikes"
+            className="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl font-bold text-xs transition-colors shadow">
+            {t("bookNow")}
+          </Link>
         </div>
       </div>
     </motion.div>
@@ -339,172 +318,142 @@ function FeaturedBike({ bike, index }) {
 
 /* ─── Testimonial Card ─── */
 function TestimonialCard({ t, i }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 35 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: i * 0.13 }}
-      whileHover={{ y: -6, transition: { duration: 0.25 } }}
-      className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-gray-100 hover:border-cyan-200 hover:shadow-xl transition-all duration-300"
-    >
-      <div className="flex gap-1 mb-4 text-amber-400">
-        {[...Array(5)].map((_, j) => <IconStar key={j} filled={j < t.rating} />)}
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-slate-800 shadow-md transition-colors duration-300 flex flex-col justify-between">
+      <div>
+        <div className="flex gap-0.5 mb-4 text-amber-500">
+          {[...Array(5)].map((_, j) => <IconStar key={j} filled={j < t.rating} />)}
+        </div>
+        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed mb-6 italic">"{t.text}"</p>
       </div>
-      <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-5 italic">"{t.text}"</p>
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-black text-sm shrink-0">
+      <div className="flex items-center gap-3 border-t border-gray-50 dark:border-slate-800/60 pt-4">
+        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-black text-xs">
           {t.name[0]}
         </div>
         <div>
-          <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-          <p className="text-gray-400 text-xs">{t.loc}</p>
+          <p className="font-extrabold text-gray-900 dark:text-white text-xs">{t.name}</p>
+          <p className="text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-wider">{t.loc}</p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 /* ─── Main Component ─── */
 export default function Home() {
+  const { t } = useApp();
   const featuredBikes = bikes.slice(0, 3);
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
-
-      {/* ── Hero ── */}
+    <div className="bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 min-h-screen font-sans overflow-x-hidden transition-colors duration-300">
+      {/* Hero */}
       <Hero />
 
-      {/* ── Marquee ── */}
+      {/* Marquee banner */}
       <Marquee />
 
-      {/* ── Floating Stats ── */}
+      {/* Stats overlay */}
       <StatsCard />
 
-      {/* ── Why Ride With Us ── */}
-      <section className="py-20 sm:py-28 md:py-32 px-5 sm:px-6">
+      {/* Why Us Section */}
+      <section className="py-20 sm:py-28 px-5 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <Reveal className="text-center mb-14 sm:mb-18">
-            <span className="text-xs font-bold tracking-[4px] uppercase text-cyan-600">Our Promise</span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mt-2 tracking-tight">
-              Why Ride With Us?
+          <Reveal className="text-center mb-14">
+            <span className="text-xs font-black tracking-[4px] uppercase text-purple-600 dark:text-purple-400">
+              {t("whyUsSubtitle")}
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black mt-2 tracking-tight">
+              {t("whyUsTitle")}
             </h2>
-            <div className="w-16 h-1.5 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto mt-5 rounded-full" />
+            <div className="w-12 h-1 bg-purple-600 dark:bg-purple-400 mx-auto mt-4 rounded-full" />
           </Reveal>
 
-          <motion.div
-            variants={stagger} initial="hidden"
-            whileInView="visible" viewport={{ once: true, margin: "-50px" }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
-          >
-            {FEATURES.map((f, i) => (
-              <motion.div
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {FEATURE_KEYS.map((f, i) => (
+              <div
                 key={i}
-                variants={fadeUp}
-                custom={i * 0.08}
-                whileHover={{ y: -10, transition: { duration: 0.25 } }}
-                className={`group bg-gradient-to-br ${f.accent} border ${f.border} p-7 sm:p-8 rounded-2xl sm:rounded-3xl hover:shadow-xl transition-all duration-400 cursor-default`}
+                className={`bg-gradient-to-br ${f.accent} border ${f.border} p-6 sm:p-8 rounded-3xl hover:shadow-lg transition-all duration-400 cursor-default flex flex-col justify-between`}
               >
-                <motion.div
-                  whileHover={{ rotate: [0, -8, 8, -5, 0], scale: 1.1 }}
-                  transition={{ duration: 0.5 }}
-                  className={`w-14 h-14 sm:w-16 sm:h-16 ${f.iconBg} ${f.iconColor} rounded-2xl flex items-center justify-center mb-5 shadow-sm`}
-                >
-                  {getIcon(f.icon)}
-                </motion.div>
-                <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-              </motion.div>
+                <div>
+                  <div className={`w-14 h-14 ${f.iconBg} ${f.iconColor} rounded-2xl flex items-center justify-center mb-6 shadow-sm`}>
+                    {getIcon(f.icon)}
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black mb-2">{t(f.titleKey)}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm leading-relaxed">{t(f.descKey)}</p>
+                </div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ── Featured Bikes ── */}
-      <section className="py-20 sm:py-28 bg-gray-900 text-white px-5 sm:px-6 relative overflow-hidden">
-        {/* BG glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-cyan-500/8 blur-3xl rounded-full pointer-events-none" />
+      {/* Featured fleet */}
+      <section className="py-20 sm:py-24 bg-gray-900 dark:bg-slate-900 text-white px-5 sm:px-6 relative overflow-hidden transition-colors duration-300">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-purple-500/5 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <span className="text-cyan-400 font-bold text-xs tracking-[4px] uppercase">Our Fleet</span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mt-2 tracking-tight">Top Rated Bikes</h2>
-            <p className="text-gray-400 mt-3 text-base sm:text-lg max-w-xl mx-auto">
-              Well-maintained machines ready for the Himalayas.
+          <Reveal className="text-center mb-12">
+            <span className="text-purple-400 font-extrabold text-xs tracking-[4px] uppercase">{t("topBikesSubtitle")}</span>
+            <h2 className="text-3xl sm:text-5xl font-black mt-2 tracking-tight">{t("topBikes")}</h2>
+            <p className="text-gray-400 mt-2 text-sm sm:text-base max-w-lg mx-auto">
+              {t("topBikesDesc")}
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {featuredBikes.map((bike, i) => <FeaturedBike key={bike.id} bike={bike} index={i} />)}
           </div>
 
-          <Reveal className="text-center mt-12 sm:mt-16" delay={0.2}>
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-              <Link to="/bikes"
-                className="inline-flex items-center gap-3 px-10 sm:px-14 py-4 sm:py-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-base sm:text-lg rounded-full shadow-xl hover:shadow-cyan-500/40 transition-all duration-300">
-                View All Bikes
-                <motion.span animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                  <IconArrowRight />
-                </motion.span>
-              </Link>
-            </motion.div>
+          <Reveal className="text-center mt-12" delay={0.2}>
+            <Link to="/bikes"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm rounded-full shadow-lg transition-transform active:scale-95">
+              {t("viewAllBikes")}
+              <IconArrowRight />
+            </Link>
           </Reveal>
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section className="py-20 sm:py-28 px-5 sm:px-6 bg-gray-50">
+      {/* Testimonials */}
+      <section className="py-20 px-5 sm:px-6 bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
         <div className="max-w-6xl mx-auto">
-          <Reveal className="text-center mb-12 sm:mb-14">
-            <span className="text-xs font-bold tracking-[4px] uppercase text-cyan-600">Rider Stories</span>
-            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mt-2">Loved by Riders</h2>
+          <Reveal className="text-center mb-12">
+            <span className="text-xs font-black tracking-[4px] uppercase text-purple-600 dark:text-purple-400">
+              {t("riderStories")}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mt-2">
+              {t("lovedByRiders")}
+            </h2>
           </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t, i) => <TestimonialCard key={i} t={t} i={i} />)}
           </div>
         </div>
       </section>
 
-      {/* ── Final CTA ── */}
-      <section className="py-24 sm:py-32 bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-900 text-white px-5 sm:px-6 relative overflow-hidden">
-        {/* Animated rings */}
-        {[250, 450, 650].map((size, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full border border-white/8 pointer-events-none"
-            style={{ width: size, height: size, top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}
-            animate={{ scale: [1, 1.07, 1], opacity: [0.5, 0.1, 0.5] }}
-            transition={{ duration: 5 + i * 2, repeat: Infinity, ease: "easeInOut", delay: i }}
-          />
-        ))}
-
-        {/* Glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15),transparent_65%)] pointer-events-none" />
+      {/* Final Promo CTA */}
+      <section className="py-24 bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 text-white px-5 sm:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.12),transparent_65%)] pointer-events-none" />
 
         <Reveal className="relative z-10 text-center max-w-3xl mx-auto">
-          <span className="text-xs font-bold tracking-[5px] uppercase text-cyan-300 mb-5 block">Limited Time Offer</span>
-          <h2 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none">
-            Ready to Ride?
+          <span className="text-xs font-black tracking-[4px] uppercase text-purple-400 mb-3 block">
+            {t("limitedOffer")}
+          </span>
+          <h2 className="text-4xl sm:text-6xl font-black tracking-tight leading-none">
+            {t("readyToRide")}
           </h2>
-          <p className="mt-5 sm:mt-6 text-lg sm:text-xl text-cyan-100/80 max-w-xl mx-auto">
-            Get <strong className="text-white font-black">10% OFF</strong> on bookings over 5 days.
-            Your Himalayan journey starts here.
+          <p className="mt-6 text-sm sm:text-base text-purple-100/80 max-w-lg mx-auto leading-relaxed">
+            {t("discountText")}
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.div whileHover={{ scale: 1.05, boxShadow: "0 25px 60px rgba(255,255,255,0.18)" }} whileTap={{ scale: 0.97 }}>
-              <Link to="/bikes"
-                className="inline-block px-10 sm:px-14 py-5 bg-white text-blue-900 font-black text-lg sm:text-xl rounded-full shadow-2xl transition-all duration-300">
-                Book Your Bike Now →
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Link to="/contact"
-                className="inline-flex items-center gap-2 px-10 sm:px-12 py-5 border-2 border-white/30 text-white font-bold text-lg sm:text-xl rounded-full hover:bg-white/10 transition-all duration-300">
-                <IconPhone /> Talk to Us
-              </Link>
-            </motion.div>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/bikes"
+              className="px-8 py-4.5 bg-white text-purple-950 font-black text-sm rounded-full shadow-lg hover:scale-105 active:scale-95 transition-transform">
+              {t("bookNowBtn")}
+            </Link>
+            <Link to="/contact"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4.5 border border-white/20 text-white font-bold text-sm rounded-full hover:bg-white/10 transition-colors">
+              <IconPhone /> {t("talkToUs")}
+            </Link>
           </div>
         </Reveal>
       </section>
