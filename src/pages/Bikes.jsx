@@ -1,10 +1,15 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable no-unused-vars, react-hooks/rules-of-hooks, react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
-import BikeCard from "../components/BikeCard";
+import BikeCard from "../components/bikes/BikeCard";
+import BikeDetailsModal from "../components/bikes/BikeDetailsModal";
 import { bikes } from "../data/bikes";
+import { useApp } from "../context/AppContext";
 
 /* ─── SVG Icons ─── */
+
 const IconClose = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -53,6 +58,8 @@ const getRentalDays = (start, end) => {
 
 /* ─── Multi-step Booking Wizard ─── */
 function BookingWizard({ bike, isOpen, onClose }) {
+  const { t, theme } = useApp();
+  
   // Step indicator state
   const [currentStep, setCurrentStep] = useState(1);
   
@@ -72,6 +79,10 @@ function BookingWizard({ bike, isOpen, onClose }) {
   const [hasPremiumJacket, setHasPremiumJacket] = useState(false);
   const [hasGoproMount, setHasGoproMount] = useState(false);
 
+  // Step 4 - Payment Method Sim
+  const [paymentMethod, setPaymentMethod] = useState("cod"); // "cod" | "esewa" | "khalti"
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
   // Error validation states
   const [validationError, setValidationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,13 +96,15 @@ function BookingWizard({ bike, isOpen, onClose }) {
       setReturnDate(tomorrow);
       setCurrentStep(1);
       setValidationError("");
+      setPaymentMethod("cod");
+      setIsProcessingPayment(false);
 
       // Pre-fill fields if rider is logged in
       const loggedInUser = JSON.parse(localStorage.getItem("currentUser") || "null");
       if (loggedInUser) {
         setRiderName(loggedInUser.name);
-        setRiderPhone(loggedInUser.phone);
-        setRiderEmail(loggedInUser.email);
+        setRiderPhone(loggedInUser.phone || "");
+        setRiderEmail(loggedInUser.email || "");
       } else {
         setRiderName("");
         setRiderPhone("");
@@ -119,13 +132,13 @@ function BookingWizard({ bike, isOpen, onClose }) {
   // Grand total
   const grandTotal = baseCost + totalAddons - discountAmount;
 
-  // Simple, intuitive step validation
+  // Step validation
   const validateAndNext = () => {
     setValidationError("");
 
     if (currentStep === 1) {
       if (!pickupDate || !returnDate) {
-        setValidationError("Please select both pickup and return dates.");
+        setValidationError(t("pickupDate"));
         return;
       }
       if (new Date(returnDate) < new Date(pickupDate)) {
@@ -164,9 +177,26 @@ function BookingWizard({ bike, isOpen, onClose }) {
   const handleFinalSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // If online payment is simulated
+    if (paymentMethod !== "cod") {
+      setIsProcessingPayment(true);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setIsProcessingPayment(false);
+      
+      // Sweet alert success checkmark for simulation
+      await Swal.fire({
+        icon: "success",
+        title: t("paymentSuccess"),
+        text: `Simulated transaction success via ${paymentMethod.toUpperCase()}`,
+        confirmButtonColor: "#8B5CF6",
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
     
     // Smooth delay simulating booking processing
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Save booking to localStorage list
     const allBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
@@ -181,6 +211,7 @@ function BookingWizard({ bike, isOpen, onClose }) {
       phone: riderPhone,
       notes: riderNotes,
       totalPrice: grandTotal,
+      paymentMethod,
       timestamp: Date.now()
     };
     allBookings.push(newBooking);
@@ -194,44 +225,54 @@ function BookingWizard({ bike, isOpen, onClose }) {
       icon: "success",
       title: "🏍️ Let's Ride, " + riderName.split(" ")[0] + "!",
       html: `
-        <div class="text-left leading-relaxed text-sm space-y-2 mt-4 px-2">
+        <div class="text-left leading-relaxed text-sm space-y-2 mt-4 px-2 dark:text-gray-300">
           <p><b>Bike Choice:</b> ${bike.name}</p>
-          <p><b>Rental Duration:</b> ${totalDays} Days (${pickupDate} to ${returnDate})</p>
+          <p><b>Rental Duration:</b> ${totalDays} ${t("days")} (${pickupDate} to ${returnDate})</p>
           <p><b>Pickup Station:</b> ${pickupLocation}</p>
+          <p><b>Payment Type:</b> ${paymentMethod.toUpperCase()}</p>
           <p><b>Total Amount:</b> Rs ${grandTotal.toLocaleString()}</p>
-          <hr class="my-3 border-gray-100" />
-          <p class="text-emerald-600 font-bold text-center">We will confirm your ride within 30 minutes! 🏔️</p>
+          <hr class="my-3 border-gray-100 dark:border-slate-800" />
+          <p class="text-emerald-600 dark:text-emerald-400 font-bold text-center">We will confirm your ride within 30 minutes! 🏔️</p>
         </div>
       `,
-      confirmButtonColor: "#0891b2",
+      confirmButtonColor: "#8B5CF6",
       confirmButtonText: "Awesome!",
       customClass: {
-        popup: "rounded-3xl",
+        popup: "rounded-3xl dark:bg-slate-900 dark:text-gray-100",
       }
     });
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
         {/* Animated Modal Container */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-300"
         >
+          {/* Processing overlay for mock payment */}
+          {isProcessingPayment && (
+            <div className="absolute inset-0 bg-white/95 dark:bg-slate-900/95 z-50 flex flex-col items-center justify-center p-8 text-center">
+              <span className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-6" />
+              <h4 className="text-lg font-black text-purple-600 dark:text-purple-400">{t("simPaymentTitle")}</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t("processingPayment", { method: paymentMethod.toUpperCase() })}</p>
+            </div>
+          )}
+
           {/* Top Banner & Header */}
-          <div className="bg-gradient-to-r from-gray-900 via-slate-800 to-cyan-900 text-white p-6 relative shrink-0">
+          <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-purple-900 text-white p-6 relative shrink-0">
             <button 
               onClick={onClose}
               className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-transform hover:rotate-90 duration-300"
             >
               <IconClose />
             </button>
-            <span className="text-cyan-400 text-xs font-bold uppercase tracking-[2px] block mb-1">
-              Step {currentStep} of 4 • Booking Wizard
+            <span className="text-purple-400 text-xs font-bold uppercase tracking-[2px] block mb-1">
+              {t("stepOf", { current: currentStep })}
             </span>
             <h3 className="text-xl sm:text-2xl font-black">{bike.name}</h3>
             
@@ -240,7 +281,7 @@ function BookingWizard({ bike, isOpen, onClose }) {
               {[1, 2, 3, 4].map((stepIdx) => (
                 <div key={stepIdx} className="flex-1 h-1.5 rounded-full bg-white/20 overflow-hidden">
                   <div 
-                    className={`h-full bg-cyan-400 transition-all duration-300 ${
+                    className={`h-full bg-purple-500 transition-all duration-300 ${
                       currentStep >= stepIdx ? "w-full" : "w-0"
                     }`}
                   />
@@ -251,7 +292,7 @@ function BookingWizard({ bike, isOpen, onClose }) {
 
           {/* Validation Alert */}
           {validationError && (
-            <div className="bg-red-50 text-red-600 px-6 py-3 text-xs font-semibold border-b border-red-100 flex items-center gap-2 shrink-0">
+            <div className="bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 px-6 py-3 text-xs font-semibold border-b border-red-100 dark:border-red-950/30 flex items-center gap-2 shrink-0">
               <span className="text-lg">⚠</span> {validationError}
             </div>
           )}
@@ -262,59 +303,73 @@ function BookingWizard({ bike, isOpen, onClose }) {
             {/* STEP 1: Dates & Location */}
             {currentStep === 1 && (
               <div className="space-y-4">
-                <div className="bg-cyan-50/50 p-4 rounded-2xl border border-cyan-100/50 mb-2">
-                  <p className="text-xs text-cyan-800 font-medium leading-relaxed">
+                <div className="bg-purple-500/10 dark:bg-purple-950/20 p-4 rounded-2xl border border-purple-200/50 dark:border-purple-800/30 mb-2">
+                  <p className="text-xs text-purple-800 dark:text-purple-300 font-medium leading-relaxed">
                     💡 <b>Himalayan Special Deal:</b> Book for 5 days or more to receive a sweet 10% discount on the base rental rate!
                   </p>
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                    Pickup Location
+                  <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                    {t("pickupStation")}
                   </label>
                   <select 
                     value={pickupLocation}
                     onChange={(e) => setPickupLocation(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none transition-all text-sm font-semibold mb-3"
                   >
                     <option value="Biratnagar">Biratnagar Main Station</option>
                     <option value="Belbari">Belbari Pick-up Spot</option>
                     <option value="Biratnagar Airport">Biratnagar Airport Terminal</option>
                   </select>
+                  
+                  {/* Map Placeholder */}
+                  <div className="w-full h-32 bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden relative group border border-gray-200 dark:border-slate-700">
+                    <img 
+                      src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=200&fit=crop" 
+                      alt="Map Location" 
+                      className="w-full h-full object-cover opacity-50 dark:opacity-40 group-hover:opacity-70 transition-opacity duration-300 filter grayscale"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="bg-purple-600 text-white px-3 py-1.5 rounded-full text-[10px] font-bold shadow-lg flex items-center gap-1.5 transform group-hover:scale-105 transition-transform">
+                        <span>📍</span> {pickupLocation}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Pickup Date
+                    <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                      {t("pickupDate")}
                     </label>
                     <input 
                       type="date"
                       value={pickupDate}
                       min={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Return Date
+                    <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                      {t("returnDate")}
                     </label>
                     <input 
                       type="date"
                       value={returnDate}
                       min={pickupDate || new Date().toISOString().split("T")[0]}
                       onChange={(e) => setReturnDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none text-sm"
                     />
                   </div>
                 </div>
 
                 {totalDays > 0 && (
-                  <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <span className="text-gray-600 text-sm font-semibold">Calculated Duration</span>
-                    <span className="px-3 py-1 bg-cyan-600 text-white text-sm font-bold rounded-lg">
-                      {totalDays} {totalDays === 1 ? "Day" : "Days"}
+                  <div className="flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 p-4 rounded-xl border border-gray-100 dark:border-slate-800">
+                    <span className="text-gray-600 dark:text-gray-400 text-sm font-semibold">{t("duration")}</span>
+                    <span className="px-3 py-1 bg-purple-600 text-white text-sm font-bold rounded-lg">
+                      {totalDays} {totalDays === 1 ? t("day") : t("days")}
                     </span>
                   </div>
                 )}
@@ -325,55 +380,55 @@ function BookingWizard({ bike, isOpen, onClose }) {
             {currentStep === 2 && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                    Rider Full Name
+                  <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                    {t("riderName")}
                   </label>
                   <input 
                     type="text"
                     value={riderName}
                     onChange={(e) => setRiderName(e.target.value)}
                     placeholder="Enter your name"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none text-sm"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Phone Number
+                    <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                      {t("riderPhone")}
                     </label>
                     <input 
                       type="tel"
                       value={riderPhone}
                       onChange={(e) => setRiderPhone(e.target.value)}
                       placeholder="98XXXXXXXX"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Email Address
+                    <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                      {t("riderEmail")}
                     </label>
                     <input 
                       type="email"
                       value={riderEmail}
                       onChange={(e) => setRiderEmail(e.target.value)}
                       placeholder="your@email.com"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none text-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                    Special Notes / Message
+                  <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                    {t("notes")}
                   </label>
                   <textarea 
                     value={riderNotes}
                     onChange={(e) => setRiderNotes(e.target.value)}
-                    placeholder="Any requests, gears size preferences or delivery notes..."
+                    placeholder="Any requests, gear size preferences or delivery notes..."
                     rows={3}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none resize-none text-sm"
                   />
                 </div>
               </div>
@@ -382,167 +437,193 @@ function BookingWizard({ bike, isOpen, onClose }) {
             {/* STEP 3: Gear & Add-ons */}
             {currentStep === 3 && (
               <div className="space-y-4">
-                <p className="text-gray-500 text-sm mb-2">
-                  Need extra safety gear? Select premium add-ons for your Himalayan trip.
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                  {t("addonsDesc")}
                 </p>
 
                 {/* Addon 1 */}
                 <label className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${
-                  hasExtraHelmet ? "border-cyan-500 bg-cyan-50/20" : "border-gray-200 bg-white"
+                  hasExtraHelmet ? "border-purple-500 bg-purple-50/20 dark:bg-purple-950/20" : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                 }`}>
                   <div className="flex items-center gap-3">
                     <input 
                       type="checkbox"
                       checked={hasExtraHelmet}
                       onChange={() => setHasExtraHelmet(!hasExtraHelmet)}
-                      className="w-5 h-5 rounded text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                      className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500 border-gray-300"
                     />
                     <div>
-                      <h4 className="font-extrabold text-gray-900 text-sm">Extra Half/Full Helmet</h4>
-                      <p className="text-gray-500 text-xs mt-0.5">Meticulously sanitized and comfortable</p>
+                      <h4 className="font-extrabold text-gray-900 dark:text-white text-sm">{t("addonHelmet")}</h4>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{t("addonHelmetDesc")}</p>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-gray-700">Rs 200/day</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Rs 200/day</span>
                 </label>
 
                 {/* Addon 2 */}
                 <label className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${
-                  hasPremiumJacket ? "border-cyan-500 bg-cyan-50/20" : "border-gray-200 bg-white"
+                  hasPremiumJacket ? "border-purple-500 bg-purple-50/20 dark:bg-purple-950/20" : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                 }`}>
                   <div className="flex items-center gap-3">
                     <input 
                       type="checkbox"
                       checked={hasPremiumJacket}
                       onChange={() => setHasPremiumJacket(!hasPremiumJacket)}
-                      className="w-5 h-5 rounded text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                      className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500 border-gray-300"
                     />
                     <div>
-                      <h4 className="font-extrabold text-gray-900 text-sm">Premium Riding Jacket</h4>
-                      <p className="text-gray-500 text-xs mt-0.5">Armored elbows and shoulders for mountain safety</p>
+                      <h4 className="font-extrabold text-gray-900 dark:text-white text-sm">{t("addonJacket")}</h4>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{t("addonJacketDesc")}</p>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-gray-700">Rs 300/day</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Rs 300/day</span>
                 </label>
 
                 {/* Addon 3 */}
                 <label className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${
-                  hasGoproMount ? "border-cyan-500 bg-cyan-50/20" : "border-gray-200 bg-white"
+                  hasGoproMount ? "border-purple-500 bg-purple-50/20 dark:bg-purple-950/20" : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                 }`}>
                   <div className="flex items-center gap-3">
                     <input 
                       type="checkbox"
                       checked={hasGoproMount}
                       onChange={() => setHasGoproMount(!hasGoproMount)}
-                      className="w-5 h-5 rounded text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                      className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500 border-gray-300"
                     />
                     <div>
-                      <h4 className="font-extrabold text-gray-900 text-sm">GoPro Action Camera Mount</h4>
-                      <p className="text-gray-500 text-xs mt-0.5">Universal helmet/handlebar mount</p>
+                      <h4 className="font-extrabold text-gray-900 dark:text-white text-sm">{t("addonGoPro")}</h4>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{t("addonGoProDesc")}</p>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-gray-700">Rs 100/day</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Rs 100/day</span>
                 </label>
               </div>
             )}
 
-            {/* STEP 4: Review Booking Summary */}
+            {/* STEP 4: Review Booking Summary & Simulated Payment */}
             {currentStep === 4 && (
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 space-y-3">
-                  <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">Ride Details</h4>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Bike Selected</span>
-                    <span className="font-bold text-gray-900">{bike.name}</span>
+                <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 space-y-3">
+                  <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">{t("summaryTitle")}</h4>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">{t("navBikes")}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{bike.name}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Pick-up Station</span>
-                    <span className="font-bold text-gray-900">{pickupLocation}</span>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">{t("pickupStation")}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{pickupLocation}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Rental Duration</span>
-                    <span className="font-bold text-gray-900">{totalDays} {totalDays === 1 ? "day" : "days"}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Trip Timeline</span>
-                    <span className="font-bold text-cyan-700">{pickupDate} to {returnDate}</span>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">{t("duration")}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{totalDays} {totalDays === 1 ? t("day") : t("days")}</span>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 space-y-3">
-                  <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">Price Breakdown</h4>
+                {/* Simulated Payment Method Selection */}
+                <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 space-y-3">
+                  <h4 className="text-xs font-black uppercase text-purple-600 dark:text-purple-400 tracking-wider">
+                    {t("choosePayment")}
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "cod", label: "Cash / Station", color: "border-purple-600 bg-purple-500/10" },
+                      { id: "esewa", label: "eSewa Sim", color: "border-green-600 bg-green-500/10" },
+                      { id: "khalti", label: "Khalti Sim", color: "border-violet-700 bg-violet-700/10" },
+                    ].map((method) => {
+                      const selected = paymentMethod === method.id;
+                      return (
+                        <button
+                          key={method.id}
+                          type="button"
+                          onClick={() => setPaymentMethod(method.id)}
+                          className={`py-2 px-1 text-[10px] font-black uppercase tracking-wider rounded-xl border-2 transition-all ${
+                            selected ? `${method.color} text-purple-700 dark:text-purple-400 scale-[1.03]` : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          {method.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 space-y-2">
+                  <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">{t("summaryPrice")}</h4>
                   
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Base Rent ({bike.price} × {totalDays} days)</span>
+                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                    <span>{t("baseRent")} ({bike.price} × {totalDays} {t("days")})</span>
                     <span>Rs {baseCost.toLocaleString()}</span>
                   </div>
 
                   {totalAddons > 0 && (
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Addon Accessories</span>
+                    <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                      <span>{t("addonsCost")}</span>
                       <span>+ Rs {totalAddons.toLocaleString()}</span>
                     </div>
                   )}
 
                   {discountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-emerald-600 font-medium">
-                      <span>Multi-day Discount (10%)</span>
+                    <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                      <span>{t("discountCost")}</span>
                       <span>- Rs {discountAmount.toLocaleString()}</span>
                     </div>
                   )}
 
-                  <hr className="border-gray-200/80 my-2" />
+                  <hr className="border-gray-200 dark:border-slate-700 my-1" />
 
-                  <div className="flex justify-between text-base font-black text-gray-900">
-                    <span>Total Amount due</span>
-                    <span className="text-lg text-cyan-600">Rs {grandTotal.toLocaleString()}</span>
+                  <div className="flex justify-between text-sm font-black text-gray-900 dark:text-white">
+                    <span>{t("totalDue")}</span>
+                    <span className="text-purple-600 dark:text-purple-400">Rs {grandTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
-                  <span className="text-emerald-600 text-lg">🛡️</span>
-                  <p className="text-emerald-800 text-xs leading-relaxed">
-                    <b>No upfront payment required.</b> You will pay when you collect the bike keys at the pick-up location. Free cancellation anytime.
-                  </p>
-                </div>
+                {paymentMethod === "cod" && (
+                  <div className="flex items-start gap-2.5 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 rounded-xl border border-emerald-100/50 dark:border-emerald-950/30">
+                    <span className="text-emerald-600 text-base">🛡️</span>
+                    <p className="text-emerald-800 dark:text-emerald-300 text-[10px] leading-relaxed">
+                      {t("noUpfront")}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           {/* Footer Controls */}
-          <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between shrink-0">
+          <div className="p-6 bg-gray-50 dark:bg-slate-900/60 border-t border-gray-100 dark:border-slate-800/80 flex items-center justify-between shrink-0">
             {currentStep > 1 ? (
               <button 
                 onClick={handlePreviousStep}
-                className="px-5 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-all hover:bg-gray-100 active:scale-95"
+                className="px-5 py-3.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl text-xs transition-all hover:bg-gray-100 active:scale-95"
               >
-                Back
+                {t("backBtn")}
               </button>
             ) : (
               <button 
                 onClick={onClose}
-                className="px-5 py-3.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-sm transition-all hover:bg-gray-100 active:scale-95"
+                className="px-5 py-3.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl text-xs transition-all hover:bg-gray-100 active:scale-95"
               >
-                Cancel
+                {t("cancelBtn")}
               </button>
             )}
 
             {currentStep < 4 ? (
               <button 
                 onClick={validateAndNext}
-                className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold rounded-xl text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                className="px-6 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs transition-all shadow-lg active:scale-95 flex items-center gap-2"
               >
-                Continue <IconArrowRight />
+                {t("continueBtn")} <IconArrowRight />
               </button>
             ) : (
               <button 
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black rounded-xl text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2 disabled:opacity-75"
+                className="px-8 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black rounded-xl text-xs transition-all shadow-lg active:scale-95 flex items-center gap-2 disabled:opacity-75"
               >
                 {isSubmitting ? (
-                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <>Book This Ride Now! 🏍️</>
+                  <>{paymentMethod === "cod" ? "Book Ride! 🏍️" : `Pay & Book 💳`}</>
                 )}
               </button>
             )}
@@ -556,27 +637,32 @@ function BookingWizard({ bike, isOpen, onClose }) {
 /* ─── Fleet Feature Card ─── */
 function FleetFeatureCard({ icon, title, desc, index }) {
   const colors = [
-    { bg: "from-cyan-500/10 to-blue-500/10", border: "border-cyan-200", text: "text-cyan-600" },
-    { bg: "from-violet-500/10 to-purple-500/10", border: "border-violet-200", text: "text-violet-600" },
-    { bg: "from-emerald-500/10 to-teal-500/10", border: "border-emerald-200", text: "text-emerald-600" },
+    { bg: "from-purple-500/10 to-indigo-500/10 dark:from-purple-500/5 dark:to-indigo-500/5", border: "border-purple-200 dark:border-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
+    { bg: "from-violet-500/10 to-purple-500/10 dark:from-violet-500/5 dark:to-purple-500/5", border: "border-violet-200 dark:border-violet-900/30", text: "text-violet-600 dark:text-violet-400" },
+    { bg: "from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/5 dark:to-teal-500/5", border: "border-emerald-200 dark:border-emerald-900/30", text: "text-emerald-600 dark:text-emerald-400" },
   ];
   const colorScheme = colors[index % colors.length];
 
   return (
-    <div className={`group bg-gradient-to-br ${colorScheme.bg} border ${colorScheme.border} rounded-3xl p-8 hover:shadow-2xl transition-all duration-400`}>
-      <div className={`inline-flex w-16 h-16 items-center justify-center bg-white rounded-2xl ${colorScheme.text} mb-6 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+    <div className={`group bg-gradient-to-br ${colorScheme.bg} border ${colorScheme.border} rounded-3xl p-8 hover:shadow-xl transition-all duration-400`}>
+      <div className={`inline-flex w-14 h-14 items-center justify-center bg-white dark:bg-slate-900 rounded-2xl ${colorScheme.text} mb-6 shadow-md group-hover:scale-105 transition-transform duration-300`}>
         {icon}
       </div>
-      <h3 className="text-xl font-black text-gray-900 mb-3">{title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+      <h3 className="text-xl font-black mb-3">{title}</h3>
+      <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{desc}</p>
     </div>
   );
 }
 
 /* ─── Main Collection Page ─── */
 export default function Bikes() {
+  const { t, theme, language } = useApp();
   const [selectedBike, setSelectedBike] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Modal Triggers
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  
   const fleetRef = useRef(null);
 
   // Advanced Filtering States
@@ -587,14 +673,17 @@ export default function Bikes() {
   // List of unique categories derived naturally
   const categories = ["All", "Cruiser", "Street", "Adventure", "Sport"];
 
-  const handleBookingTrigger = (bike) => {
+  const handleCardClick = (bike) => {
     setSelectedBike(bike);
-    setIsModalOpen(true);
+    setIsDetailsOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedBike(null);
+  const handleProceedToBook = (bike) => {
+    setIsDetailsOpen(false);
+    // Add small delay to let details modal close smoothly
+    setTimeout(() => {
+      setIsWizardOpen(true);
+    }, 200);
   };
 
   const handleScrollToFleet = () => {
@@ -604,9 +693,9 @@ export default function Bikes() {
   // Filter bikes based on search queries and slider selections
   const filteredBikes = bikes.filter((bike) => {
     const matchesSearch = bike.name.toLowerCase().includes(searchText.toLowerCase()) || 
-                          bike.category.toLowerCase().includes(searchText.toLowerCase()) ||
-                          bike.location.toLowerCase().includes(searchText.toLowerCase());
-                          
+                           bike.category.toLowerCase().includes(searchText.toLowerCase()) ||
+                           bike.location.toLowerCase().includes(searchText.toLowerCase());
+                           
     const matchesCategory = activeCategory === "All" || bike.category === activeCategory;
     const matchesPrice = bike.price <= priceLimit;
 
@@ -614,45 +703,45 @@ export default function Bikes() {
   });
 
   const features = [
-    { icon: <IconShield />, title: "Fully Insured Fleet", desc: "Every single motorcycle in our fleet is fully backed by damage and theft coverage." },
-    { icon: <IconPhone />, title: "24/7 Road Assistance", desc: "No matter where you choose to ride in Nepal, mechanical support is just a call away." },
-    { icon: <IconStar />, title: "Sanitized & Serviced", desc: "Rigorous 21-point mechanical and cleanliness checks before handover to ensuring maximum safety." },
+    { icon: <IconShield />, title: t("insuredTitle"), desc: t("insuredDesc") },
+    { icon: <IconPhone />, title: t("supportTitle"), desc: t("supportDesc") },
+    { icon: <IconStar />, title: t("modelsTitle"), desc: t("modelsDesc") },
   ];
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
+    <div className="bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 min-h-screen font-sans overflow-x-hidden transition-colors duration-300">
       
       {/* Dynamic Parallax Hero */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=1920&q=85"
             alt="Motorcycle Adventure Nepal"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-slate-950/90" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_25%,rgba(34,211,238,0.22),transparent_70%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-slate-950/90 dark:to-slate-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_25%,rgba(139,92,246,0.22),transparent_70%)]" />
         </div>
 
         <div className="relative z-10 text-center px-5 max-w-4xl mx-auto text-white">
-          <div className="inline-flex items-center gap-2 px-5 py-2 mb-6 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-cyan-200 text-xs font-semibold uppercase tracking-[3px]">
-            🏍️ Premium Motorcycle Rentals • Biratnagar
+          <div className="inline-flex items-center gap-2 px-5 py-2 mb-6 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-purple-200 text-xs font-semibold uppercase tracking-[3px]">
+            🏍️ Premium Motorcycle Rentals • Nepal
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black leading-none tracking-tight mb-6">
             Conquer The{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400">
               Highlands
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-8 font-light leading-relaxed">
-            Handpicked premium bikes built to deliver the absolute finest motorcycle adventure across Nepal.
+          <p className="text-base sm:text-lg text-gray-300 max-w-xl mx-auto mb-8 font-light leading-relaxed">
+            {t("heroSubtitle")}
           </p>
 
           <button
             onClick={handleScrollToFleet}
-            className="px-8 py-4 sm:py-4.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm rounded-full shadow-lg transition-transform active:scale-95"
+            className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm rounded-full shadow-lg transition-transform active:scale-95"
           >
             Explore Catalog
           </button>
@@ -660,19 +749,21 @@ export default function Bikes() {
       </section>
 
       {/* Fleet Catalog & Interactive Filters */}
-      <section ref={fleetRef} className="py-16 sm:py-24 px-5 sm:px-6">
+      <section ref={fleetRef} className="py-16 px-5 sm:px-6">
         <div className="max-w-7xl mx-auto">
           
           <div className="text-center mb-12">
-            <span className="text-xs font-extrabold tracking-[4px] uppercase text-cyan-600 block mb-2">Our Collection</span>
-            <h2 className="text-3xl sm:text-5xl font-black text-gray-900">Explore Our Premium Fleet</h2>
-            <p className="text-gray-500 mt-2 text-sm sm:text-base max-w-lg mx-auto">
-              Find the perfect motorcycle designed to accommodate your adventure size, budget, and riding style.
+            <span className="text-xs font-extrabold tracking-[4px] uppercase text-purple-600 dark:text-purple-400 block mb-2">
+              {t("bikesCollection")}
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black">{t("exploreFleet")}</h2>
+            <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base max-w-lg mx-auto">
+              {t("exploreFleetDesc")}
             </p>
           </div>
 
           {/* Interactive Filters Panel */}
-          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 mb-12 space-y-6">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-slate-800 mb-12 space-y-6 transition-colors">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               
               {/* Search Box */}
@@ -684,16 +775,16 @@ export default function Bikes() {
                   type="text"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Search bike name, category..."
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-cyan-500 outline-none text-sm transition-all"
+                  placeholder={t("searchPlaceholder")}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl outline-none text-sm transition-all"
                 />
               </div>
 
               {/* Price Slider */}
               <div className="space-y-2 md:col-span-2">
-                <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  <span>Price Range Limit</span>
-                  <span className="text-cyan-600 font-extrabold">Rs {priceLimit} / day</span>
+                <div className="flex justify-between items-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <span>{t("priceLimitLabel")}</span>
+                  <span className="text-purple-600 dark:text-purple-400 font-extrabold">Rs {priceLimit} / {t("day")}</span>
                 </div>
                 <input
                   type="range"
@@ -702,62 +793,80 @@ export default function Bikes() {
                   step="50"
                   value={priceLimit}
                   onChange={(e) => setPriceLimit(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+                  className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-650"
                 />
               </div>
             </div>
 
             {/* Category Filter Tabs */}
-            <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-slate-800/80">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
                   className={`px-5 py-2.5 rounded-full text-xs font-black tracking-wider uppercase transition-all ${
                     activeCategory === category
-                      ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20"
-                      : "bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-100"
+                      ? "bg-purple-600 text-white shadow-md"
+                      : "bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-100 dark:border-slate-850"
                   }`}
                 >
-                  {category}
+                  {category === "All" ? (language === "ne" ? "सबै" : "All") : category}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Catalog grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filteredBikes.length > 0 ? (
-              filteredBikes.map((bike) => (
-                <div key={bike.id} className="transition-all duration-300">
-                  <BikeCard bike={bike} onBook={handleBookingTrigger} />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full py-16 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200 p-8">
-                <p className="text-lg font-bold">No motorcycles found matching your active filters.</p>
-                <button
-                  onClick={() => {
-                    setSearchText("");
-                    setActiveCategory("All");
-                    setPriceLimit(2000);
-                  }}
-                  className="mt-4 px-6 py-2.5 bg-cyan-600 text-white text-xs font-bold rounded-lg hover:bg-cyan-500"
+          <motion.div 
+            layout
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+          >
+            <AnimatePresence>
+              {filteredBikes.length > 0 ? (
+                filteredBikes.map((bike, index) => (
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    key={bike.id} 
+                    className="transition-all"
+                  >
+                    <BikeCard bike={bike} onBook={handleCardClick} />
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="col-span-full py-16 text-center text-gray-400 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-gray-200 dark:border-slate-800 p-8"
                 >
-                  Reset Active Filters
-                </button>
-              </div>
-            )}
-          </div>
+                  <p className="text-lg font-bold">{t("noBikesFound")}</p>
+                  <button
+                    onClick={() => {
+                      setSearchText("");
+                      setActiveCategory("All");
+                      setPriceLimit(2000);
+                    }}
+                    className="mt-4 px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg"
+                  >
+                    {t("resetFilters")}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </section>
 
       {/* Trust Badges */}
-      <section className="py-16 sm:py-24 px-5 bg-white border-t border-gray-100">
+      <section className="py-16 sm:py-24 px-5 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-xs font-extrabold tracking-[4px] uppercase text-cyan-600 block mb-2">Our Promise</span>
-            <h2 className="text-3xl sm:text-5xl font-black text-gray-900">Why Modern Riders Pick Us</h2>
+            <span className="text-xs font-extrabold tracking-[4px] uppercase text-purple-600 dark:text-purple-400 block mb-2">
+              {t("whyUsSubtitle")}
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black">{t("whyModernRiders")}</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((f, i) => (
@@ -767,8 +876,20 @@ export default function Bikes() {
         </div>
       </section>
 
+      {/* Bike details modal */}
+      <BikeDetailsModal 
+        bike={selectedBike} 
+        isOpen={isDetailsOpen} 
+        onClose={() => { setIsDetailsOpen(false); setSelectedBike(null); }} 
+        onProceedToBook={handleProceedToBook}
+      />
+
       {/* Multi-step Booking Wizard Modal */}
-      <BookingWizard bike={selectedBike} isOpen={isModalOpen} onClose={handleCloseModal} />
+      <BookingWizard 
+        bike={selectedBike} 
+        isOpen={isWizardOpen} 
+        onClose={() => { setIsWizardOpen(false); setSelectedBike(null); }} 
+      />
     </div>
   );
 }
