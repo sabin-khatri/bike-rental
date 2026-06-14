@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion"; 
+import { useAuth } from "../context/AuthContext";
 
 const navLinks = [
   { name: "Home", path: "/", icon: "⌂" },
@@ -11,7 +11,9 @@ const navLinks = [
 ];
 
 /* ── Mobile drawer ── */
-function MobileDrawer({ open, onClose, currentPath, currentUser }) {
+function MobileDrawer({ open, onClose, currentPath, user }) {
+  const dashboardPath = user ? (user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard') : '/login';
+
   return (
     <AnimatePresence>
       {open && (
@@ -39,7 +41,7 @@ function MobileDrawer({ open, onClose, currentPath, currentUser }) {
             </button>
 
             <div className="pt-16 pb-8 px-8">
-              <span className="text-xl font-black text-purple-600">BikeRental.</span>
+              <span className="text-xl font-black text-orange-600">BikeRental.</span>
               <p className="text-gray-400 text-xs mt-1">Ride beyond boundaries 🏍️</p>
             </div>
 
@@ -54,8 +56,8 @@ function MobileDrawer({ open, onClose, currentPath, currentUser }) {
                     onClick={onClose}
                     className="flex items-center justify-between px-5 py-4 rounded-2xl font-bold text-sm transition-all"
                     style={{
-                      background: isActive ? "#F3E8FF" : "transparent",
-                      color: isActive ? "#6C3AEB" : "#1F2937"
+                      background: isActive ? "#FFF7ED" : "transparent",
+                      color: isActive ? "#EA580C" : "#1F2937"
                     }}
                   >
                     <span>{item.name}</span>
@@ -66,11 +68,11 @@ function MobileDrawer({ open, onClose, currentPath, currentUser }) {
 
             {/* Sign In CTA for Mobile */}
             <div className="p-6">
-              <Link to="/dashboard" onClick={onClose}>
+              <Link to={dashboardPath} onClick={onClose}>
                 <button
-                  className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-2xl shadow-lg transition-transform active:scale-95 text-sm"
+                  className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-extrabold rounded-2xl shadow-lg transition-transform active:scale-95 text-sm"
                 >
-                  {currentUser ? `${currentUser.name} (Dashboard)` : "Sign In"}
+                  {user ? `${user.name} (Dashboard)` : "Sign In"}
                 </button>
               </Link>
             </div>
@@ -85,21 +87,10 @@ function MobileDrawer({ open, onClose, currentPath, currentUser }) {
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user } = useAuth(); // Connects straight to our AuthContext
   
   const location = useLocation();
   const isHome = location.pathname === "/";
-
-  // Check login state
-  useEffect(() => {
-    const checkUser = () => {
-      const user = JSON.parse(localStorage.getItem("currentUser") || "null");
-      setCurrentUser(user);
-    };
-    checkUser();
-    const interval = setInterval(checkUser, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -111,7 +102,9 @@ export default function Navbar() {
 
   const navBg = transparent
     ? "bg-transparent"
-    : "bg-white/97 backdrop-blur-xl border-b border-purple-100/60 shadow-sm";
+    : "bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm";
+
+  const dashboardPath = user ? (user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard') : '/login';
 
   return (
     <>
@@ -119,7 +112,7 @@ export default function Navbar() {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         currentPath={location.pathname}
-        currentUser={currentUser}
+        user={user}
       />
 
       <nav className={`fixed top-0 left-0 right-0 z-[200] transition-all duration-300 ${navBg}`} style={{ height: "72px" }}>
@@ -130,11 +123,11 @@ export default function Navbar() {
             <motion.div 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center font-black text-sm text-white shadow-md shadow-purple-500/20"
+              className="w-10 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center font-black text-sm text-white shadow-md"
             >
               BR
             </motion.div>
-            <span className="text-xl font-black transition-colors" style={{ color: transparent ? "white" : "#111827" }}>
+            <span className="text-xl font-black transition-colors text-gray-900">
               BikeRental
             </span>
           </Link>
@@ -149,7 +142,8 @@ export default function Navbar() {
                     whileHover={{ y: -1 }}
                     className="px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all hover:bg-gray-100/40"
                     style={{
-                      color: isActive ? "#6C3AEB" : (transparent ? "rgba(255, 255, 255, 0.8)" : "#4B5563")
+                      // Fixed transparent text visibility issue: Always dark text or orange if active
+                      color: isActive ? "#EA580C" : "#4B5563"
                     }}
                   >
                     {item.name}
@@ -161,18 +155,18 @@ export default function Navbar() {
 
           {/* Dynamic Login / Dashboard Button */}
           <div className="hidden lg:block">
-            <Link to="/dashboard">
+            <Link to={dashboardPath}>
               <motion.button
                 whileHover={{ scale: 1.04, y: -1 }}
                 whileTap={{ scale: 0.96 }}
                 className="px-6 py-2.5 rounded-full font-black text-sm transition-all"
                 style={{
-                  background: transparent ? "white" : "linear-gradient(135deg, #6C3AEB, #4B28B5)",
-                  color: transparent ? "#6C3AEB" : "white",
-                  boxShadow: "0 4px 16px rgba(108,58,235,0.2)"
+                  background: transparent ? "white" : "linear-gradient(135deg, #f97316, #dc2626)",
+                  color: transparent ? "#ea580c" : "white",
+                  boxShadow: "0 4px 16px rgba(234,88,12,0.2)"
                 }}
               >
-                {currentUser ? `${currentUser.name} (Dashboard)` : "Sign In"}
+                {user ? `${user.name} (Dashboard)` : "Sign In"}
               </motion.button>
             </Link>
           </div>
