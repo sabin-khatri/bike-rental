@@ -1,12 +1,13 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable no-unused-vars, react-hooks/rules-of-hooks, react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
+
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
-import BikeCard from "../components/bikes/BikeCard";
-import BikeDetailsModal from "../components/bikes/BikeDetailsModal";
+import BikeCard from "./../components/BikeCard";
+import BikeDetailsModal from "./../components/bikes/BikeDetailsModal";
 import { bikes } from "../data/bikes";
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 
 /* ─── SVG Icons ─── */
 
@@ -59,6 +60,7 @@ const getRentalDays = (start, end) => {
 /* ─── Multi-step Booking Wizard ─── */
 function BookingWizard({ bike, isOpen, onClose }) {
   const { t, theme } = useApp();
+  const { user } = useAuth();
   
   // Step indicator state
   const [currentStep, setCurrentStep] = useState(1);
@@ -92,6 +94,7 @@ function BookingWizard({ bike, isOpen, onClose }) {
     if (isOpen) {
       const today = new Date().toISOString().split("T")[0];
       const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPickupDate(today);
       setReturnDate(tomorrow);
       setCurrentStep(1);
@@ -100,18 +103,17 @@ function BookingWizard({ bike, isOpen, onClose }) {
       setIsProcessingPayment(false);
 
       // Pre-fill fields if rider is logged in
-      const loggedInUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-      if (loggedInUser) {
-        setRiderName(loggedInUser.name);
-        setRiderPhone(loggedInUser.phone || "");
-        setRiderEmail(loggedInUser.email || "");
+      if (user) {
+        setRiderName(user.name);
+        setRiderPhone(user.phone || "");
+        setRiderEmail(user.email || "");
       } else {
         setRiderName("");
         setRiderPhone("");
         setRiderEmail("");
       }
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   if (!isOpen || !bike) return null;
 
