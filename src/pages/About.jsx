@@ -1,230 +1,9 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence, useScroll, useTransform, useInView } from "framer-motion";
-import { useApp } from "../context/AppContext";
 
-/* ─── Animation Variants ─── */
-const fadeUp = {
-  hidden: { opacity: 0, y: 35 },
-  visible: (d = 0) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.7, delay: d, ease: "easeOut" },
-  }),
-};
-
-const fadeLeft = {
-  hidden: { opacity: 0, x: -40 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
-
-const fadeRight = {
-  hidden: { opacity: 0, x: 40 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
-
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
-};
-
-const popIn = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: (d = 0) => ({
-    opacity: 1, scale: 1,
-    transition: { duration: 0.5, delay: d, ease: "easeOut" },
-  }),
-};
-
-/* ─── Reusable Animated Section Wrapper ─── */
-function Reveal({ children, variants = fadeUp, delay = 0, className = "" }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
-  return (
-    <motion.div
-      ref={ref}
-      variants={variants}
-      custom={delay}
-      initial="hidden"
-      animate={inView ? "visible" : "hidden"}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* ─── Animated Counter ─── */
-function Counter({ end, suffix = "", duration = 1.5 }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
-  useEffect(() => {
-    if (!inView) return;
-    let start = 0;
-    const step = end / (duration * 60);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= end) { setCount(end); clearInterval(timer); }
-      else setCount(Math.floor(start));
-    }, 1000 / 60);
-    return () => clearInterval(timer);
-  }, [inView, end, duration]);
-  return <span ref={ref}>{count}{suffix}</span>;
-}
-
-/* ─── FAQ Item ─── */
-function FAQItem({ faq, i }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Reveal delay={i * 0.05}>
-      <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${open ? "border-purple-500 shadow-md shadow-purple-500/10" : "border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"}`}>
-        <button
-          onClick={() => setOpen(!open)}
-          className="w-full px-6 py-5 text-left flex justify-between items-center gap-4 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors"
-          aria-expanded={open}
-        >
-          <span className="text-sm sm:text-base font-extrabold text-gray-900 dark:text-white leading-snug">{faq.q}</span>
-          <motion.span
-            animate={{ rotate: open ? 180 : 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="shrink-0 w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold"
-          >
-            ↓
-          </motion.span>
-        </button>
-        <AnimatePresence initial={false}>
-          {open && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              <p className="px-6 pb-5 pt-1 text-gray-500 dark:text-gray-400 leading-relaxed text-xs sm:text-sm border-t border-gray-100 dark:border-slate-850">
-                {faq.a}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </Reveal>
-  );
-}
-
-/* ─── Team Card ─── */
-function TeamCard({ person, i }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
-      whileHover={{ y: -6 }}
-      className="group text-center"
-    >
-      <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 shadow-md bg-slate-100 dark:bg-slate-800">
-        <img
-          src={person.img}
-          alt={person.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60" />
-      </div>
-      <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{person.name}</h3>
-      <p className="text-purple-600 dark:text-purple-400 font-extrabold text-[10px] tracking-widest mt-1 uppercase">{person.role}</p>
-    </motion.div>
-  );
-}
-
-/* ─── Parallax Hero ─── */
-function ParallaxHero() {
-  const { t } = useApp();
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-
-  return (
-    <section ref={ref} className="relative h-[80vh] flex items-center justify-center overflow-hidden">
-      {/* Parallax BG */}
-      <motion.div style={{ y }} className="absolute inset-0 scale-110 z-0">
-        <img
-          src="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=1920&q=85"
-          alt="Riding in Nepal Himalayas"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/60 to-slate-950/90 dark:to-slate-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_40%_25%,rgba(139,92,246,0.22),transparent_65%)]" />
-      </motion.div>
-
-      <motion.div style={{ opacity }} className="relative z-10 text-center px-5 max-w-5xl mx-auto text-white">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="inline-block px-6 py-2 mb-6 rounded-full bg-white/10 backdrop-blur-2xl border border-white/25 text-purple-200 text-xs font-semibold tracking-[3px] uppercase"
-        >
-          Established 2020 • Biratnagar, Nepal
-        </motion.span>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.35, ease: "easeOut" }}
-          className="text-3xl sm:text-5xl md:text-6xl font-black leading-none tracking-tighter mb-6"
-        >
-          We Don't Just Rent Bikes.
-          <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-400">
-            We Create Adventures.
-          </span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.55 }}
-          className="text-base sm:text-lg text-gray-300 max-w-xl mx-auto font-light leading-relaxed"
-        >
-          Premium motorcycles. Unforgettable Himalayan journeys. Real rider support.
-        </motion.p>
-      </motion.div>
-    </section>
-  );
-}
-
-/* ─── Stats Bar ─── */
-function StatsBar() {
-  const { t } = useApp();
-  const stats = [
-    { end: 100, suffix: "+", label: t("premiumBikes") },
-    { end: 5000, suffix: "+", label: t("happyRiders") },
-    { end: 3, suffix: "", label: t("locations") },
-    { end: 4, suffix: "", label: t("roadSupport") },
-  ];
-  return (
-    <section className="bg-gray-900 dark:bg-slate-900 border-b border-gray-800 dark:border-slate-800/80 py-10 transition-colors">
-      <div className="max-w-6xl mx-auto px-5 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-        {stats.map((s, i) => (
-          <Reveal key={i} delay={i * 0.08}>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-black text-purple-400">
-              <Counter end={s.end} suffix={s.suffix} />
-            </div>
-            <p className="text-gray-400 dark:text-gray-500 text-[10px] mt-1.5 tracking-widest uppercase font-bold">{s.label}</p>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ─── Main Component ─── */
 export default function About() {
-  const { t, language } = useApp();
+  const [faqSearch, setFaqSearch] = useState("");
 
   const safetyItems = [
     { icon: "🛠️", title: "Daily Maintenance", text: "Every bike goes through a strict 21-point safety inspection before handover." },
@@ -242,129 +21,138 @@ export default function About() {
   ];
 
   const faqs = [
-    { q: "Do I need a license to rent a motorcycle?", a: "Yes, a valid driver's license for motorcycles is strictly required. International tourists must hold an IDP." },
+    { q: "Do I need a license to rent a motorcycle?", a: "Yes, a valid driver's license for motorcycles is strictly required. International tourists must hold an IDP (International Driving Permit)." },
     { q: "What happens if the bike breaks down?", a: "We offer roadside rescue mechanics. If the issue is severe, we replace the bike promptly." },
-    { q: "Is fuel included?", a: "No, fuel costs are paid by the rider. We deliver the bike with some fuel, and you pay for what you use." },
+    { q: "Is fuel included in the price?", a: "No, fuel costs are paid by the rider. We deliver the bike with some fuel, and you pay for what you use." },
+    { q: "What is the minimum age to rent a bike?", a: "Riders must be at least 18 years old and hold a valid motorcycle driver's license." },
+    { q: "Are there limit restrictions on distance?", a: "No, we offer unlimited mileage on all of our rental fleet so you can explore Nepal fully." },
   ];
 
-  return (
-    <div className="bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 min-h-screen font-sans overflow-x-hidden transition-colors duration-300">
-      
-      {/* Hero */}
-      <ParallaxHero />
+  const filteredFaqs = faqs.filter(
+    (faq) =>
+      faq.q.toLowerCase().includes(faqSearch.toLowerCase()) ||
+      faq.a.toLowerCase().includes(faqSearch.toLowerCase())
+  );
 
-      {/* Stats */}
-      <StatsBar />
+  return (
+    <div className="bg-slate-50 text-gray-800 min-h-screen font-sans">
+      
+      {/* Hero Section */}
+      <section className="bg-white pt-24 pb-16 md:pt-32 md:pb-20 border-b border-gray-150">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <span className="text-xs font-bold uppercase tracking-wider text-orange-600 px-3 py-1.5 bg-orange-50 rounded-full">
+            About Us
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-950 tracking-tight">
+            We Don't Just Rent Bikes. We Create Adventures.
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Founded in Biratnagar in 2020, we started with one dream — to make Nepal's majestic landscapes accessible on two wheels. Today, we proudly maintain a premium fleet of 100+ motorcycles.
+          </p>
+        </div>
+      </section>
 
       {/* Our Story */}
-      <section className="py-16 sm:py-24 px-5 bg-white dark:bg-slate-900 transition-colors">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-6"
-          >
-            <motion.div variants={fadeUp}>
-              <span className="text-xs font-bold tracking-[4px] uppercase text-purple-600 dark:text-purple-400">Our Origin</span>
-              <h2 className="text-3xl sm:text-5xl font-black mt-2 tracking-tight">Our Story</h2>
-            </motion.div>
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-950">Our Origin Story</h2>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              We began our journey with just 5 bikes, serving local riders in Biratnagar. Through absolute focus on bike maintenance, safety, and client happiness, we expanded our hubs. Today, we are trusted by thousands of local and international travelers exploring the beauty of Nepal.
+            </p>
+            <Link to="/bikes" className="inline-block px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-lg transition-all">
+              Browse Rental Catalog
+            </Link>
+          </div>
+          <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+            <img
+              src="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=600&q=80"
+              alt="Bike Rental Journey"
+              className="w-full h-80 object-cover"
+            />
+          </div>
+        </div>
+      </section>
 
-            <motion.div variants={stagger} className="space-y-4 text-sm sm:text-base text-gray-500 dark:text-gray-400 leading-relaxed font-semibold">
-              <motion.p variants={fadeUp}>
-                Born in the bustling streets of <strong>Biratnagar in 2020</strong>, we began with just 5 bikes and one big dream — to make Nepal's majestic landscapes accessible to every passionate rider.
-              </motion.p>
-              <motion.p variants={fadeUp}>
-                Today, we proudly maintain a premium fleet of <strong>100+ motorcycles</strong>. From the rugged roads of Mustang to scenic highways — our bikes have carried thousands of unforgettable stories.
-              </motion.p>
-            </motion.div>
+      {/* Safety is Non-Negotiable */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-950">Safety is Non-Negotiable</h2>
+            <p className="text-sm text-gray-500 mt-2">How we ensure a smooth, worry-free journey</p>
+          </div>
 
-            <motion.div variants={fadeUp}>
-              <Link
-                to="/bikes"
-                className="px-6 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow shadow-purple-500/20"
-              >
-                Start Journey →
-              </Link>
-            </motion.div>
-          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {safetyItems.map((item, i) => (
+              <div key={i} className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                <div className="text-3xl">{item.icon}</div>
+                <h3 className="text-base font-bold text-gray-900">{item.title}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <Reveal variants={fadeRight} className="relative">
-            <div className="relative overflow-hidden rounded-3xl shadow-xl bg-slate-100 dark:bg-slate-800">
-              <img
-                src="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=600&q=80"
-                alt="Our Journey in Nepal"
-                className="w-full object-cover"
-                loading="lazy"
+      {/* Meet Team */}
+      <section className="py-16 bg-white border-y border-gray-150">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-950">Meet Our Team</h2>
+            <p className="text-sm text-gray-500 mt-2">The experts keeping your rides safe and smooth</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {team.map((person, i) => (
+              <div key={i} className="text-center space-y-3">
+                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border border-gray-200">
+                  <img src={person.img} alt={person.name} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">{person.name}</h3>
+                  <p className="text-orange-600 text-xs font-semibold">{person.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ accordion with Real-time Search */}
+      <section className="py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 space-y-3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-950">Frequently Asked Questions</h2>
+            
+            {/* FAQ Search Box */}
+            <div className="max-w-md mx-auto pt-2">
+              <input 
+                type="text" 
+                value={faqSearch}
+                onChange={(e) => setFaqSearch(e.target.value)}
+                placeholder="Search queries (e.g. license, breakdown...)"
+                className="w-full px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm outline-none focus:border-orange-500 transition-all text-center"
               />
             </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Safety Info */}
-      <section className="py-16 sm:py-24 px-5 bg-gray-50 dark:bg-slate-950 transition-colors">
-        <div className="max-w-7xl mx-auto">
-          <Reveal className="text-center mb-12">
-            <span className="uppercase tracking-[4px] text-purple-600 dark:text-purple-400 font-extrabold text-xs">Safety First</span>
-            <h2 className="text-3xl sm:text-5xl font-black mt-2">Safety is Non-Negotiable</h2>
-          </Reveal>
-
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {safetyItems.map((item, i) => (
-              <motion.div
-                key={i}
-                variants={popIn}
-                custom={i * 0.05}
-                whileHover={{ y: -6 }}
-                className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-850 p-6 rounded-3xl transition-all duration-300"
-              >
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2 text-gray-900 dark:text-white">{item.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm leading-relaxed">{item.text}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-16 px-5 bg-white dark:bg-slate-900 transition-colors">
-        <div className="max-w-7xl mx-auto">
-          <Reveal className="text-center mb-12">
-            <span className="text-xs font-bold tracking-[4px] uppercase text-purple-600 dark:text-purple-400">The Crew</span>
-            <h2 className="text-3xl sm:text-5xl font-black mt-2">Meet Our Team</h2>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {team.map((person, i) => (
-              <TeamCard key={i} person={person} i={i} />
-            ))}
           </div>
-        </div>
-      </section>
-
-      {/* FAQ Accordions */}
-      <section className="py-16 px-5 bg-gray-50 dark:bg-slate-950 transition-colors">
-        <div className="max-w-3xl mx-auto">
-          <Reveal className="text-center mb-12">
-            <span className="text-xs font-bold tracking-[4px] uppercase text-purple-600 dark:text-purple-400">FAQs</span>
-            <h2 className="text-3xl sm:text-5xl font-black mt-2">Frequently Asked Questions</h2>
-          </Reveal>
+          
           <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <FAQItem key={i} faq={faq} i={i} />
-            ))}
+            {filteredFaqs.length > 0 ? (
+              filteredFaqs.map((faq, i) => (
+                <div key={i} className="bg-white border border-gray-150 p-5 rounded-xl">
+                  <h4 className="text-sm sm:text-base font-bold text-gray-900">{faq.q}</h4>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mt-2">{faq.a}</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 bg-white border border-dashed border-gray-200 rounded-xl">
+                <p className="text-sm text-gray-500 font-semibold">No questions found matching your query.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
+
     </div>
   );
 }
