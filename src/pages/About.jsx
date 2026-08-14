@@ -1,9 +1,37 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+
+/* ─── Motion presets (matches Home.jsx) ─── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const stagger = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const Reveal = ({ children, className = "", delay = 0 }) => (
+  <motion.div
+    className={className}
+    initial="hidden"
+    whileInView="show"
+    viewport={{ once: true, amount: 0.2 }}
+    variants={fadeUp}
+    transition={{ delay }}
+  >
+    {children}
+  </motion.div>
+);
 
 export default function About() {
   const [faqSearch, setFaqSearch] = useState("");
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   const safetyItems = [
     { icon: "🛠️", title: "Daily Maintenance", text: "Every bike goes through a strict 21-point safety inspection before handover." },
@@ -34,13 +62,23 @@ export default function About() {
       faq.a.toLowerCase().includes(faqSearch.toLowerCase())
   );
 
+  const toggleFaq = (index) => {
+    setOpenFaqIndex((prev) => (prev === index ? null : index));
+  };
+
   return (
-    <div className="bg-slate-50 text-gray-800 min-h-screen font-sans">
-      
+    <div className="bg-slate-50 text-gray-800 min-h-screen font-sans overflow-x-hidden">
       {/* Hero Section */}
-      <section className="bg-white pt-24 pb-16 md:pt-32 md:pb-20 border-b border-gray-150">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-orange-600 px-3 py-1.5 bg-orange-50 rounded-full">
+      <section className="relative bg-white pt-24 pb-16 md:pt-32 md:pb-20 border-b border-gray-200 overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 bg-orange-100/40 rounded-full blur-3xl" aria-hidden="true" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6"
+        >
+          <span className="inline-block text-xs font-bold uppercase tracking-wider text-orange-600 px-3 py-1.5 bg-orange-50 rounded-full">
             About Us
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-950 tracking-tight">
@@ -49,101 +87,170 @@ export default function About() {
           <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Founded in Biratnagar in 2020, we started with one dream — to make Nepal's majestic landscapes accessible on two wheels. Today, we proudly maintain a premium fleet of 100+ motorcycles.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* Our Story */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
+          <Reveal className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-950">Our Origin Story</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
               We began our journey with just 5 bikes, serving local riders in Biratnagar. Through absolute focus on bike maintenance, safety, and client happiness, we expanded our hubs. Today, we are trusted by thousands of local and international travelers exploring the beauty of Nepal.
             </p>
-            <Link to="/bikes" className="inline-block px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-lg transition-all">
+            <Link
+              to="/bikes"
+              className="inline-block px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-lg transition-all active:scale-95"
+            >
               Browse Rental Catalog
             </Link>
-          </div>
-          <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+          </Reveal>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="rounded-2xl overflow-hidden shadow-sm border border-gray-100"
+          >
             <img
               src="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=600&q=80"
               alt="Bike Rental Journey"
-              className="w-full h-80 object-cover"
+              className="w-full h-64 sm:h-80 object-cover"
             />
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Safety is Non-Negotiable */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <Reveal className="text-center max-w-xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-950">Safety is Non-Negotiable</h2>
             <p className="text-sm text-gray-500 mt-2">How we ensure a smooth, worry-free journey</p>
-          </div>
+          </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.15 }}
+            variants={stagger}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {safetyItems.map((item, i) => (
-              <div key={i} className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow space-y-4"
+              >
                 <div className="text-3xl">{item.icon}</div>
                 <h3 className="text-base font-bold text-gray-900">{item.title}</h3>
                 <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">{item.text}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Meet Team */}
-      <section className="py-16 bg-white border-y border-gray-150">
+      <section className="py-16 bg-white border-y border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <Reveal className="text-center max-w-xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-950">Meet Our Team</h2>
             <p className="text-sm text-gray-500 mt-2">The experts keeping your rides safe and smooth</p>
-          </div>
+          </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-8"
+          >
             {team.map((person, i) => (
-              <div key={i} className="text-center space-y-3">
-                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border border-gray-200">
-                  <img src={person.img} alt={person.name} className="w-full h-full object-cover" />
+              <motion.div key={i} variants={fadeUp} className="text-center space-y-3 group">
+                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border border-gray-200 ring-4 ring-transparent group-hover:ring-orange-100 transition-all">
+                  <img
+                    src={person.img}
+                    alt={person.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-gray-900">{person.name}</h3>
                   <p className="text-orange-600 text-xs font-semibold">{person.role}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* FAQ accordion with Real-time Search */}
       <section className="py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 space-y-3">
+          <Reveal className="text-center mb-10 space-y-3">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-950">Frequently Asked Questions</h2>
-            
+
             {/* FAQ Search Box */}
             <div className="max-w-md mx-auto pt-2">
-              <input 
-                type="text" 
+              <label htmlFor="faq-search" className="sr-only">Search FAQs</label>
+              <input
+                id="faq-search"
+                type="text"
                 value={faqSearch}
                 onChange={(e) => setFaqSearch(e.target.value)}
                 placeholder="Search queries (e.g. license, breakdown...)"
                 className="w-full px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm outline-none focus:border-orange-500 transition-all text-center"
               />
             </div>
-          </div>
-          
+          </Reveal>
+
           <div className="space-y-4">
             {filteredFaqs.length > 0 ? (
-              filteredFaqs.map((faq, i) => (
-                <div key={i} className="bg-white border border-gray-150 p-5 rounded-xl">
-                  <h4 className="text-sm sm:text-base font-bold text-gray-900">{faq.q}</h4>
-                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mt-2">{faq.a}</p>
-                </div>
-              ))
+              filteredFaqs.map((faq, i) => {
+                const isOpen = openFaqIndex === i;
+                return (
+                  <motion.div
+                    key={faq.q}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white border border-gray-200 rounded-xl overflow-hidden"
+                  >
+                    <button
+                      onClick={() => toggleFaq(i)}
+                      aria-expanded={isOpen}
+                      className="w-full flex items-center justify-between gap-4 text-left p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-inset"
+                    >
+                      <h4 className="text-sm sm:text-base font-bold text-gray-900">{faq.q}</h4>
+                      <motion.span
+                        animate={{ rotate: isOpen ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-orange-50 text-orange-600 text-xs font-bold"
+                        aria-hidden="true"
+                      >
+                        ▾
+                      </motion.span>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <p className="text-gray-600 text-xs sm:text-sm leading-relaxed px-5 pb-5">{faq.a}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })
             ) : (
               <div className="text-center py-10 bg-white border border-dashed border-gray-200 rounded-xl">
                 <p className="text-sm text-gray-500 font-semibold">No questions found matching your query.</p>
@@ -152,7 +259,6 @@ export default function About() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }
