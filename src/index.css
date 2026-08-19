@@ -1,9 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-orange: #FF5A00;
+  --color-brand-orange-hover: #E04E00;
+  --color-brand-orange-light: #FFF5F0;
+  --color-brand-dark: #0A0A0F;
+  --color-brand-card-dark: #12121A;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -11,40 +19,93 @@
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.8s ease-out forwards;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(3deg);
+  }
 }
 
-.animate-fade-in-delay-100 {
-  animation-delay: 0.1s;
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
-.animate-fade-in-delay-200 {
-  animation-delay: 0.2s;
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
-.animate-fade-in-delay-300 {
-  animation-delay: 0.3s;
+
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-panel {
+  background: rgba(18, 18, 26, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-navbar {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-b: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-navbar {
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-b: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 /* Smooth transition for theme colors */
 *, ::before, ::after {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 250ms;
+  transition-duration: 300ms;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(255, 90, 0, 0.25);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.7);
+  background: rgba(255, 90, 0, 0.6);
 }
 
 html {
@@ -54,4 +115,13 @@ html {
 
 body {
   overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Neon Amber shadows */
+.shadow-neon-orange {
+  box-shadow: 0 0 20px rgba(255, 90, 0, 0.15);
+}
+.hover\:shadow-neon-orange-hover:hover {
+  box-shadow: 0 0 30px rgba(255, 90, 0, 0.35);
 }
